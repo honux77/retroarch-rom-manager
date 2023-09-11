@@ -1,0 +1,9 @@
+# rom and images
+*.gb
+*.gbc
+*.nes
+
+*.png
+*.jpg
+*.gif
+
