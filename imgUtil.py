@@ -5,8 +5,7 @@ from os import path
 
 def findImageFromRomName(romPath, romName):
     imgName = path.splitext(romName)[0] + '.png'
-    fullPath = path.join(basePath, romPath, imgName)
-    print(fullPath)
+    fullPath = path.join(basePath, romPath, imgName)    
     if not path.exists(fullPath):
         return None
     image = Image.open(fullPath)
