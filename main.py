@@ -10,6 +10,9 @@ from tkinter import messagebox as mBox
 
 from PIL import ImageTk, Image
 
+import fileUtil
+import imgUtil
+
 # Create instance
 win = tk.Tk()
 
@@ -85,7 +88,16 @@ def selectDir():
     else:
         debug("디렉토리 변경 실패")    
 
-# 라벨들
+# 롬 파일 및 이미지 삭제 이벤트 핸들러
+def deleteRomAndImages():
+    romName = romListBox.get(romListBox.curselection())
+    subPath = romBox.get()
+    fileUtil.deleteRomAndImages(subPath, romName)
+    romBox.event_generate("<<ComboboxSelected>>")
+
+########################
+# 라벨들               #
+########################   
 label = ttk.Label(win, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
@@ -98,9 +110,8 @@ label3.grid(column=2, row=2, pady=5, padx=5)
 label4 = ttk.Label(win, text="이미지 미리 보기")
 label4.grid(column=0, row=4, pady=5, padx=5)
 
-#load base Image
+#baseImage and imgLabel
 baseImageTk = ImageTk.PhotoImage(Image.open("images/base.png"))
-
 imgLabel = ttk.Label(win, image=baseImageTk)
 imgLabel.grid(column=0, row=5, pady=5, padx=5)
 
@@ -117,10 +128,8 @@ folderSelectButton = ttk.Button(win, text="폴더 찾기", command=selectDir)
 folderSelectButton.grid(column=3, row=1, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
-fileDeleteButton = ttk.Button(win, text="선택 롬과 이미지 삭제")
+fileDeleteButton = ttk.Button(win, text="선택 롬과 이미지 삭제", command=deleteRomAndImages)
 fileDeleteButton.grid(column=3, row=2, pady=5, padx=5)
-
-
 
 # 폴더 선택 콤보 박스
 romBox = ttk.Combobox(win, values=readSubDirs())

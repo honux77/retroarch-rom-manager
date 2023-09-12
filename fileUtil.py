@@ -1,3 +1,7 @@
+import os
+from os import path
+import tkinter as tk
+from tkinter import messagebox as mBox
 
 romExt = {
     "fc":".nes" ,
@@ -9,8 +13,7 @@ romExt = {
 }
 
 def getRomList(dirName):
-    import os
-    from os import path
+
     dir = path.join('roms/', dirName)
     roms = [f for f in os.listdir(dir) if f.endswith(romExt[dirName])]    
     return roms
@@ -46,6 +49,19 @@ def printRomInfo(imgPath, romPath):
     for f in roms:
         if f not in imgs:
             print("Image not exists: ", f)
+
+def deleteRomAndImages(subPath, romName):
+    msg = ""
+    result = mBox.askquestion("삭제", "선택된 롬과 이미지를 삭제하시겠습니까?")
+    rom = path.join('roms/', subPath, romName)
+    name = path.splitext(romName)[0]
+    img = path.join('images/', subPath, name + '.png')
+    os.remove(rom)
+    try:
+        os.remove(img)    
+    except:
+        return "이미지 삭제 실패"
+    return romName + " 삭제 성공"
 
 # main function for test
 if __name__ == "__main__":
