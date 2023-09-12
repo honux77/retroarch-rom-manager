@@ -15,6 +15,14 @@ def getRomList(dirName):
     roms = [f for f in os.listdir(dir) if f.endswith(romExt[dirName])]    
     return roms
 
+
+def getImgList(dirName):
+    import os
+    from os import path
+    dir = path.join('images/', dirName)
+    imgs = [f for f in os.listdir(dir) if f.endswith('.png')]
+    return imgs
+
 def imageDelete(imgPath, romPath):
     import os
     from os import path

@@ -42,16 +42,37 @@ def listSelectedDir():
     dir = romBox.get()
     import fileUtil
     romList = fileUtil.getRomList(dir)
+    
+    # get image list and cut extension
+    imgNameList = [path.splitext(f)[0] for f in fileUtil.getImgList(dir)]
+    
     # add romList to romListBox
-    romListBox.delete(0, tk.END)
-    w = romListBox.winfo_width()
+    romListBox.delete(0, tk.END)    
+
     for rom in romList:
-        romListBox.insert(tk.END, rom)    
-        w = max(w, len(rom))
+        romName = path.splitext(rom)[0]
+        romListBox.insert(tk.END, rom)            
+        noImgList = ""
+        
+        if romName not in imgNameList:
+            romListBox.itemconfig(tk.END, {'bg':'red'})
+            noImgList += rom + "\n"
+
+        
     # resize romListBox
-    romListBox.config(height=len(romList), width=w)
+    romListBox.config(height=len(romList), width= 50)
+    # set default value to first item
+    romListBox.select_set(0)
     # show romListBox
     romListBox.pack()
+
+    # add no image list to scrolledtext
+    noImageTextBox.delete(1.0, tk.END)
+    noImageTextBox.insert(tk.INSERT, noImgList)
+    noImageTextBox.pack()
+    
+
+
     
 
 # 선택 버튼을 추가하고 이 버튼을 클릭하면 선택된 항목을 표시하는 함수를 호출합니다.
@@ -63,6 +84,12 @@ from tkinter import Listbox
 romListBox = Listbox(win)
 # hide romListBox
 romListBox.pack_forget()
+
+
+# 이미지가 없는 롬 목록 출력용
+from tkinter import Text
+noImageTextBox = Text(win)
+noImageTextBox.pack_forget()
 
 # 애플리케이션을 실행합니다.
 win.mainloop()
