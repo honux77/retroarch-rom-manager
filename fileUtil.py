@@ -1,4 +1,19 @@
-# check 
+
+romExt = {
+    "fc":".nes" ,
+    "gb":".gb" ,
+    "gbc":".gbc" ,
+    "md":".md" ,
+    "cps1":".cps",
+    "sms":".sms" ,
+}
+
+def getRomList(dirName):
+    import os
+    from os import path
+    dir = path.join('roms/', dirName)
+    roms = [f for f in os.listdir(dir) if f.endswith(romExt[dirName])]    
+    return roms
 
 def imageDelete(imgPath, romPath):
     import os
@@ -23,3 +38,8 @@ def printRomInfo(imgPath, romPath):
     for f in roms:
         if f not in imgs:
             print("Image not exists: ", f)
+
+# main function for test
+if __name__ == "__main__":
+    print("Test getRomList")
+    print(getRomList('fc'))
