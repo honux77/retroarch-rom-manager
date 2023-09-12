@@ -33,26 +33,36 @@ from os import path
 subdirs = [f for f in os.listdir('roms/') if path.isdir(path.join('roms/', f))]
 
 romBox = ttk.Combobox(win, values=subdirs)
+#set default value to first item
+romBox.current(0)
 romBox.pack()
 
 # add Button for selected romBox
-
-
-# # rom list box 생성
-# romListbox = tk.Listbox(win, height=20, width=50)
-
-
-# # 롬 목록 선택시 이벤트 처리
-# def romListSelected(*args):
-#     print("romListSelected", numberChosen.get())
-#     romList = [f for f in os.listdir(path.join('roms/', numberChosen.get())) if path.isfile(path.join('roms/', numberChosen.get(), f))]
-#     romList.sort()
+def listSelectedDir():
+    dir = romBox.get()
+    import fileUtil
+    romList = fileUtil.getRomList(dir)
+    # add romList to romListBox
+    romListBox.delete(0, tk.END)
+    w = romListBox.winfo_width()
+    for rom in romList:
+        romListBox.insert(tk.END, rom)    
+        w = max(w, len(rom))
+    # resize romListBox
+    romListBox.config(height=len(romList), width=w)
+    # show romListBox
+    romListBox.pack()
     
-#     romListbox.delete(0, tk.END)
-#     for rom in romList:
-#         romListbox.insert(tk.END, rom)
-#     romListbox.select_set(0)
-#     romListbox.event_generate("<<ListboxSelect>>")  
+
+# 선택 버튼을 추가하고 이 버튼을 클릭하면 선택된 항목을 표시하는 함수를 호출합니다.
+select_button = ttk.Button(win, text="선택", command=listSelectedDir)
+select_button.pack()
+
+# 선택 결과를 표시할 listBox 추가
+from tkinter import Listbox
+romListBox = Listbox(win)
+# hide romListBox
+romListBox.pack_forget()
 
 # 애플리케이션을 실행합니다.
 win.mainloop()
