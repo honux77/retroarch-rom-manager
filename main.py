@@ -7,11 +7,15 @@ from tkinter import ttk
 from tkinter import scrolledtext
 from tkinter import Menu
 from tkinter import messagebox as mBox
+from tkinter import Text
 
 from PIL import ImageTk, Image
 
 import fileUtil
 import imgUtil
+
+# for global variable
+from config import *
 
 # Create instance
 win = tk.Tk()
@@ -40,8 +44,8 @@ def listSelectedDir(event):
     # add romList to romListBox
     romListBox.delete(0, tk.END)    
 
-    #delete noImageTextBox
-    noImageTextBox.delete(1.0, tk.END)
+    #delete msgTextBox
+    msgTextBox.delete(1.0, tk.END)
 
     for rom in romList:
         romName = path.splitext(rom)[0]
@@ -49,7 +53,7 @@ def listSelectedDir(event):
         
         if romName not in imgNameList:
             romListBox.itemconfig(tk.END, {'bg':'red'})
-            noImageTextBox.insert(tk.INSERT, rom + "\n")
+            msgTextBox.insert(tk.INSERT, rom + "\n")
                         
     # set default value to first item
     romListBox.select_set(0)
@@ -68,25 +72,23 @@ def romListBoxSelectHandler(event):
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
         imgLabel.image = imageTk
-        imgInfoLabel.configure(text="{}: {} X {}".format(romFile, imageTk.width(), imageTk.height()))
+        debug("{}: {} X {}".format(romFile, imageTk.width(), imageTk.height()))
     else:
         imgLabel.configure(image=baseImageTk)
-        imgInfoLabel.configure(text="Image Not Found") 
+        debug("Image Not Found") 
 
-
-# 디렉토리 지정 다이얼로그
+# 다겟 티렉토리 지정
 def selectDir():
-    import openDir
-    import os
-    dir = openDir.openFileDialog(currentDir=os.getcwd())    
-    if dir != None:       
-        os.chdir(dir)
-        romBox['values'] = readSubDirs()
-        romBox.current(0)
-        romBox.event_generate("<<ComboboxSelected>>")
-        debug("디렉토리 변경: " + os.getcwd())
-    else:
-        debug("디렉토리 변경 실패")    
+    global targetDir
+    import openDir    
+    print(targetDir)
+    dir = openDir.openFileDialog(currentDir=targetDir)    
+    if dir != None:               
+        if path.isdir(path.join(dir, 'roms')) and path.isdir(path.join(dir, 'images')):
+             targetDir = dir
+             debug("타겟 디렉토리 변경: " +targetDir)
+        else:
+            debug("디렉토리 변경 실패")    
 
 # 롬 파일 및 이미지 삭제 이벤트 핸들러
 def deleteRomAndImages():
@@ -94,6 +96,27 @@ def deleteRomAndImages():
     subPath = romBox.get()
     fileUtil.deleteRomAndImages(subPath, romName)
     romBox.event_generate("<<ComboboxSelected>>")
+
+# 이미지 크롭 및 리사이즈
+def resizeAllImages():
+    import imageCrop
+    subPath = romBox.get()
+    imageCrop.resizeAndCropAll(subPath, msgTextBox)
+    debug("이미지 리사이즈 완료")    
+
+# 롬 이름 간소화
+def simplifyRomName():
+    subPath = romBox.get()
+    result = fileUtil.simplifyRomName(subPath)
+    msgTextBox.configure(text=result)
+    debug("롬 및 이미지 이름 간소화 완료")
+
+# 이미지 이름 간소화
+def simplifyImageName():
+    subPath = romBox.get()
+    result = fileUtil.simplifyImageName(subPath)
+    msgTextBox.configure(text=result)
+    debug("롬 및 이미지 이름 간소화 완료")
 
 ########################
 # 라벨들               #
@@ -104,32 +127,49 @@ label.grid(column=0, row=0, pady=5, padx=5)
 label2 = ttk.Label(win, text="불러온 롬 리스트")
 label2.grid(column=0, row=2, pady=5, padx=5)
 
-label3 = ttk.Label(win, text="이미지가 없는 롬들")
+label3 = ttk.Label(win, text="출력 메시지 1")
 label3.grid(column=2, row=2, pady=5, padx=5)
 
 label4 = ttk.Label(win, text="이미지 미리 보기")
 label4.grid(column=0, row=4, pady=5, padx=5)
+
+label5 = ttk.Label(win, text="출력 메시지 2")
+label5.grid(column=2, row=4, pady=5, padx=5)
 
 #baseImage and imgLabel
 baseImageTk = ImageTk.PhotoImage(Image.open("images/base.png"))
 imgLabel = ttk.Label(win, image=baseImageTk)
 imgLabel.grid(column=0, row=5, pady=5, padx=5)
 
-imgInfoLabel = ttk.Label(win, text="Image Info")
-imgInfoLabel.grid(column=2, row=5, pady=5, padx=5)
-
 # debug label
 debugLabel = ttk.Label(win, text="debug")
 debugLabel.grid(column=0, row=6, pady=5, padx=5)
 
-# buttons
+#######################################
+# buttons                             #
+#######################################
+
 # 폴더 찾기 버튼
-folderSelectButton = ttk.Button(win, text="폴더 찾기", command=selectDir)
-folderSelectButton.grid(column=3, row=1, pady=5, padx=5)
+folderSelectButton = ttk.Button(win, text="대상 폴더 지정", command=selectDir)
+folderSelectButton.grid(column=3, row=0, pady=5, padx=5)
+
+# 이미지 리사이즈 버튼
+imageResizeButton = ttk.Button(win, text="이미지 리사이즈", command=resizeAllImages)
+imageResizeButton.grid(column=4, row=0, pady=5, padx=5)
+
+# 롬 이름 간소화 버튼
+romNameSimplifyButton = ttk.Button(win, text="롬 이름 간소화", command=simplifyRomName)
+romNameSimplifyButton.grid(column=3, row=1, pady=5, padx=5)
+
+# 이미지 이름 간소화 버튼
+romNameSimplifyButton = ttk.Button(win, text="이미지 이름 간소화", command=simplifyImageName)
+romNameSimplifyButton.grid(column=4, row=1, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(win, text="선택 롬과 이미지 삭제", command=deleteRomAndImages)
 fileDeleteButton.grid(column=3, row=2, pady=5, padx=5)
+
+
 
 # 폴더 선택 콤보 박스
 romBox = ttk.Combobox(win, values=readSubDirs())
@@ -146,12 +186,12 @@ romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
 romListBox.grid(column=0, row=3, padx=5, pady=5)
 
 
-# 이미지가 없는 롬 목록 출력용
-from tkinter import Text
-noImageTextBox = Text(win)
-noImageTextBox.config(height=20, width= 50)
-noImageTextBox.grid(column=2, row=3, padx=5, pady=5)
+# 메시지 출력용 텍스트 박스
+msgTextBox = Text(win)
+msgTextBox.config(height=25, width= 50)
+msgTextBox.grid(column=2, row=3, padx=5, pady=5)
 
+# 마지막으로 최초 선택된 폴더의 롬 리스트를 보여줌
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.
