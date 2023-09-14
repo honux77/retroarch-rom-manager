@@ -31,7 +31,7 @@ def readSubDirs():
     return subdirs
 
 # Set size of window
-win.geometry("1024x768")
+win.geometry("1100x800")
 
 # event handler for select_button
 def listSelectedDir(event):
@@ -47,7 +47,10 @@ def listSelectedDir(event):
 
     #delete msgTextBox
     msgTextBox.delete(1.0, tk.END)
-    msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n")
+    msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
+
+    found = 0
+    notFound = 0
 
     for rom in romList:
         romName = path.splitext(rom)[0]
@@ -55,9 +58,14 @@ def listSelectedDir(event):
         
         if romName not in imgNameList:
             romListBox.itemconfig(tk.END, {'bg':'red'})
-            msgTextBox.insert(tk.INSERT, rom + "\n")
+            msgTextBox.insert(tk.INSERT, romName + ".png\n")
+            notFound += 1
+        else:
+            found += 1
                         
-    # set default value to first item
+    msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(found + notFound, notFound))
+
+    # 첫번째 롬을 선택하고 이벤트를 발생시켜서 이미지 미리 보기를 실행
     romListBox.select_set(0)
     romListBox.event_generate("<<ListboxSelect>>")
     
@@ -76,7 +84,7 @@ def romListBoxSelectHandler(event):
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
         imgLabel.image = imageTk
-        debug("{}: {} X {}".format(romFile, imageTk.width(), imageTk.height()))
+        debug("{}: {} X {} ".format(imageName, imageTk.width(), imageTk.height()))
     else:
         imgLabel.configure(image=baseImageTk)
         debug("{} Not Found".format(imageName))
@@ -105,8 +113,8 @@ def deleteRomAndImages():
 def resizeAllImages():
     import imageCrop
     subPath = romBox.get()
-    imageCrop.resizeAndCropAll(subPath, msgTextBox)
-    debug("이미지 리사이즈 완료")    
+    n = imageCrop.resizeAndCropAll(subPath, msgTextBox)
+    debug("{} 이미지 리사이즈 완료".format(n))
 
 # 롬 이름 단순화 핸들러
 def simplifyRomName():
@@ -196,7 +204,7 @@ romBox.bind("<<ComboboxSelected>>", listSelectedDir)
 # 롬 리스트용 리스트 박스
 from tkinter import Listbox
 romListBox = Listbox(win)
-romListBox.config(height=20, width= 50)
+romListBox.config(height=20, width= 40)
 # 롬 선택시 이미지 미리 보기
 romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
 romListBox.grid(column=0, row=3, padx=5, pady=5)
@@ -207,11 +215,14 @@ romListBox.grid(column=0, row=3, padx=5, pady=5)
 
 # 메시지 출력용 텍스트 박스
 msgTextBox = Text(win)
-msgTextBox.config(height=25, width= 50)
+msgTextBox.config(height=25, width= 70)
 msgTextBox.grid(column=2, row=3, padx=5, pady=5)
 
 # 마지막으로 최초 선택된 폴더의 롬 리스트를 보여줌
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.
+ico = Image.open('icon16.png')
+photo = ImageTk.PhotoImage(ico)
+win.wm_iconphoto(False, photo)
 win.mainloop()
