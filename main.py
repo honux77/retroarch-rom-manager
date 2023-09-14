@@ -31,11 +31,16 @@ root.geometry("900x800")
 def readSubDirs():        
     subdirs = [f for f in os.listdir('roms/') if path.isdir(path.join('roms/', f))]
     return subdirs
-# event handler for select_button
+
 def listSelectedDir(event):
+    '''
+    콤보 박스에서 폴더를 선택하면 해당 폴더의 롬 리스트를 보여준다.
+    '''
     dir = romBox.get()
     import fileUtil
+
     romList = fileUtil.getRomList(dir)
+    romList.sort()
     
     # get image list and cut extension
     imgNameList = [path.splitext(f)[0] for f in fileUtil.getImgList(dir)]
