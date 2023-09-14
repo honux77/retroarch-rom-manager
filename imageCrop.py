@@ -10,7 +10,7 @@ def resizeAndCropAll(gamePath, msgTextBox:tk.Text):
     currDir = os.getcwd()
     # delete textBox content
     msgTextBox.delete(1.0, tk.END)
-    msgTextBox.insert(tk.INSERT, "===이미지 리사이즈 및 크롭 시작===\n\n")    
+    msgTextBox.insert(tk.INSERT, "=== 이미지 리사이즈 및 크롭 시작 ===\n\n")    
 
     # save it as a new png file
     subdir = path.join(IMAGE_PATH, gamePath)
@@ -22,8 +22,10 @@ def resizeAndCropAll(gamePath, msgTextBox:tk.Text):
     for f in files:    
         count += _changeImg(f, msgTextBox)
 
-    msgTextBox.insert(tk.INSERT, "\n=============================\n")
-    msgTextBox.insert(tk.INSERT, "{} 이미지가 변환되었습니다.".format(count))
+    if count == 0:
+        msgTextBox.insert(tk.INSERT, "변환할 이미지가 없습니다.\n")
+    else:
+        msgTextBox.insert(tk.INSERT, "\n{} 이미지가 변환되었습니다.".format(count))
     os.chdir(currDir)    
     return count
 
@@ -32,7 +34,7 @@ def _changeImg(f, msgTextBox:tk.Text):
     width, height = img.size
     
     if width == 240 and height == 240:
-        msgTextBox.insert(tk.INSERT, "Skip Image {} Size: 240x240\n".format(f))
+        print("Skip Image {} Size: 240x240\n".format(f))
         return 0
     
     cx, cy = width // 2, height // 2

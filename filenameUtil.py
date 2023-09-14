@@ -23,6 +23,21 @@ def simplifyRomName(subRomDir, msgTextBox:tk.Text):
     '''
     return _simplifyFileName(ROM_PATH, subRomDir, EXT[subRomDir], msgTextBox)   
     
+def renameRomAndImages(subPath, oldName, newName):
+    '''
+    롬 파일명과 이미지 파일명을 변경한다.
+    subPath: 롬 파일이 있는 서브 폴더명
+    romName: 변경할 롬 파일명
+    newName: 새롭게 변경할 롬 파일명
+    '''
+    oldRom = path.join(ROM_PATH, subPath, oldName + EXT[subPath])
+    newRom = path.join(ROM_PATH, subPath, newName + EXT[subPath])
+    os.rename(oldRom, newRom)
+            
+    oldImg = path.join(IMAGE_PATH, subPath, oldName + '.png')
+    newImg = path.join(IMAGE_PATH, subPath, newName + '.png')
+    os.rename(oldImg, newImg)
+
 
 def _simplifyFileName(basePath, subDir, extension, msgTextBox:tk.Text):
     '''

@@ -6,6 +6,16 @@ from tkinter import messagebox as mBox
 
 from config import ROM_PATH, IMAGE_PATH, EXT
 
+
+def findSimilarImage(romName, allImages):
+    '''
+    romName과 가장 유사한 이미지 파일명을 찾아서 반환한다.
+    romName: 롬 파일명
+    allImages: 이미지 파일명 리스트
+    '''
+    import fuzzywuzzy.process as fuzzProcess
+    return fuzzProcess.extractOne(romName, allImages)
+
 def getRomList(dirName):
     dir = path.join(ROM_PATH, dirName)
     roms = [f for f in os.listdir(dir) if f.endswith(EXT[dirName])]    
