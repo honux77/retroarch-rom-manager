@@ -12,6 +12,7 @@ from tkinter import Text
 from PIL import ImageTk, Image
 
 import fileUtil
+import filenameUtil
 import imgUtil
 
 # for global variable
@@ -41,11 +42,12 @@ def listSelectedDir(event):
     # get image list and cut extension
     imgNameList = [path.splitext(f)[0] for f in fileUtil.getImgList(dir)]
     
-    # add romList to romListBox
+    # delete romListBox
     romListBox.delete(0, tk.END)    
 
     #delete msgTextBox
     msgTextBox.delete(1.0, tk.END)
+    msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n")
 
     for rom in romList:
         romName = path.splitext(rom)[0]
@@ -58,24 +60,26 @@ def listSelectedDir(event):
     # set default value to first item
     romListBox.select_set(0)
     romListBox.event_generate("<<ListboxSelect>>")
-    # show romListBox
+    
 
 # simple function for printing debug message
 def debug(msg):
     debugLabel.configure(text=msg)
 
 # event handler for romListBox
+# 롬 선택시 이미지 미리 보기 실행
 def romListBoxSelectHandler(event):
     romFile = romListBox.get(romListBox.curselection())
     import imgUtil
-    imageTk = imgUtil.findImageFromRomName(romBox.get(), romFile)
+    imageName = path.splitext(romFile)[0] + '.png'
+    imageTk = imgUtil.findImage(romBox.get(), imageName)
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
         imgLabel.image = imageTk
         debug("{}: {} X {}".format(romFile, imageTk.width(), imageTk.height()))
     else:
         imgLabel.configure(image=baseImageTk)
-        debug("Image Not Found") 
+        debug("{} Not Found".format(imageName))
 
 # 다겟 티렉토리 지정
 def selectDir():
@@ -97,44 +101,47 @@ def deleteRomAndImages():
     fileUtil.deleteRomAndImages(subPath, romName)
     romBox.event_generate("<<ComboboxSelected>>")
 
-# 이미지 크롭 및 리사이즈
+# 이미지 크롭 및 리사이즈 핸들러
 def resizeAllImages():
     import imageCrop
     subPath = romBox.get()
     imageCrop.resizeAndCropAll(subPath, msgTextBox)
     debug("이미지 리사이즈 완료")    
 
-# 롬 이름 간소화
+# 롬 이름 단순화 핸들러
 def simplifyRomName():
     subPath = romBox.get()
-    result = fileUtil.simplifyRomName(subPath)
-    msgTextBox.configure(text=result)
-    debug("롬 및 이미지 이름 간소화 완료")
+    msgTextBox.delete(1.0, tk.END)
+    msgTextBox.insert(tk.INSERT, "=== 롬 이름 단순화 시작 ===\n")    
+    n = filenameUtil.simplifyRomName(subPath, msgTextBox)
+    msgTextBox.insert(tk.INSERT, "\n{} 롬 이름 단순화 완료\n".format(n))
+    debug("{} 롬 이름 단순화 완료".format(n)) 
+    
 
-# 이미지 이름 간소화
+# 이미지 이름 단순화 핸들러
 def simplifyImageName():
     subPath = romBox.get()
-    result = fileUtil.simplifyImageName(subPath)
-    msgTextBox.configure(text=result)
-    debug("롬 및 이미지 이름 간소화 완료")
+    msgTextBox.delete(1.0, tk.END)
+    msgTextBox.insert(tk.INSERT, "=== 이미지 이름 단순화 시작 ===\n")    
+    n = filenameUtil.simplifyImageName(subPath, msgTextBox)
+    msgTextBox.insert(tk.INSERT, "\n{} 이미지 이름 단순화 완료\n".format(n))
+    debug("{} 이미지 이름 단순화 완료".format(n))
 
 ########################
 # 라벨들               #
-########################   
+########################
+
 label = ttk.Label(win, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
 label2 = ttk.Label(win, text="불러온 롬 리스트")
 label2.grid(column=0, row=2, pady=5, padx=5)
 
-label3 = ttk.Label(win, text="출력 메시지 1")
+label3 = ttk.Label(win, text="출력 메시지")
 label3.grid(column=2, row=2, pady=5, padx=5)
 
 label4 = ttk.Label(win, text="이미지 미리 보기")
 label4.grid(column=0, row=4, pady=5, padx=5)
-
-label5 = ttk.Label(win, text="출력 메시지 2")
-label5.grid(column=2, row=4, pady=5, padx=5)
 
 #baseImage and imgLabel
 baseImageTk = ImageTk.PhotoImage(Image.open("images/base.png"))
@@ -157,19 +164,22 @@ folderSelectButton.grid(column=3, row=0, pady=5, padx=5)
 imageResizeButton = ttk.Button(win, text="이미지 리사이즈", command=resizeAllImages)
 imageResizeButton.grid(column=4, row=0, pady=5, padx=5)
 
-# 롬 이름 간소화 버튼
-romNameSimplifyButton = ttk.Button(win, text="롬 이름 간소화", command=simplifyRomName)
+# 롬 이름 단순화 버튼
+romNameSimplifyButton = ttk.Button(win, text="롬 이름 단순화", command=simplifyRomName)
 romNameSimplifyButton.grid(column=3, row=1, pady=5, padx=5)
 
-# 이미지 이름 간소화 버튼
-romNameSimplifyButton = ttk.Button(win, text="이미지 이름 간소화", command=simplifyImageName)
+# 이미지 이름 단순화 버튼
+romNameSimplifyButton = ttk.Button(win, text="이미지 이름 단순화", command=simplifyImageName)
 romNameSimplifyButton.grid(column=4, row=1, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
-fileDeleteButton = ttk.Button(win, text="선택 롬과 이미지 삭제", command=deleteRomAndImages)
-fileDeleteButton.grid(column=3, row=2, pady=5, padx=5)
+fileDeleteButton = ttk.Button(win, text="선택 롬/이미지 삭제", command=deleteRomAndImages)
+fileDeleteButton.grid(column=3, row=3, pady=5, padx=5)
 
 
+#######################################
+# comboboxes                          #
+#######################################
 
 # 폴더 선택 콤보 박스
 romBox = ttk.Combobox(win, values=readSubDirs())
@@ -178,13 +188,22 @@ romBox.current(0)
 romBox.grid(column=0, row=1, padx=5, pady=5)
 romBox.bind("<<ComboboxSelected>>", listSelectedDir)
 
+
+#######################################
+# listboxes                           #
+#######################################
+
 # 롬 리스트용 리스트 박스
 from tkinter import Listbox
 romListBox = Listbox(win)
 romListBox.config(height=20, width= 50)
+# 롬 선택시 이미지 미리 보기
 romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
 romListBox.grid(column=0, row=3, padx=5, pady=5)
 
+#######################################
+# textboxes                           #
+#######################################
 
 # 메시지 출력용 텍스트 박스
 msgTextBox = Text(win)

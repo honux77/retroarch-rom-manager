@@ -1,28 +1,21 @@
 import os
 from os import path
+import re
 import tkinter as tk
 from tkinter import messagebox as mBox
 
-romExt = {
-    "fc":".nes" ,
-    "gb":".gb" ,
-    "gbc":".gbc" ,
-    "md":".md" ,
-    "cps1":".cps",
-    "sms":".sms" ,
-}
+from config import ROM_PATH, IMAGE_PATH, EXT
 
 def getRomList(dirName):
-
-    dir = path.join('roms/', dirName)
-    roms = [f for f in os.listdir(dir) if f.endswith(romExt[dirName])]    
+    dir = path.join(ROM_PATH, dirName)
+    roms = [f for f in os.listdir(dir) if f.endswith(EXT[dirName])]    
     return roms
 
 
 def getImgList(dirName):
     import os
     from os import path
-    dir = path.join('images/', dirName)
+    dir = path.join(IMAGE_PATH, dirName)
     imgs = [f for f in os.listdir(dir) if f.endswith('.png')]
     return imgs
 

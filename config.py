@@ -11,7 +11,7 @@ EXT = {
     "md":".md" ,
     "cps1":".zip",
     "ms":".sms" ,
-    "sg":".sg" ,
+    "sg":".sg" ,    
 }
 
 # global variables

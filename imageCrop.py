@@ -20,11 +20,12 @@ def resizeAndCropAll(gamePath, msgTextBox:tk.Text):
     
     n = 0
     for f in files:    
-        n += changeImg(f, msgTextBox)
+        n += _changeImg(f, msgTextBox)
+
     msgTextBox.insert(tk.INSERT, "{} 이미지가 변환되었습니다.".format(n))
     os.chdir(currDir)    
 
-def changeImg(f, msgTextBox:tk.Text):
+def _changeImg(f, msgTextBox:tk.Text):
     img = Image.open(f)    
     width, height = img.size
     
@@ -52,3 +53,4 @@ def changeImg(f, msgTextBox:tk.Text):
         msgTextBox.insert(tk.INSERT, "{} 를 240x240 크롭 및 PNG 변환 완료\n".format(newFile))
         os.remove(f)
         msgTextBox.insert(tk.INSERT, "{} 삭제 완료\n".format(f))
+    
