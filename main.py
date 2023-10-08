@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
 from tkinter import Menu
-from tkinter import messagebox as mBox
 from tkinter import Text
 from tkinter import simpledialog
 
@@ -16,21 +15,27 @@ import fileUtil
 import filenameUtil
 import imgUtil
 
-# for global variable
-from config import *
+# set env from json file
+
+import json
+with open('config.json', 'r') as f:
+    config = json.load(f)
+    
+
+# change working directory
+os.chdir(config['basePath'])
 
 # Create instance
 root = tk.Tk()
-root.title("Famliy Pocket Rom Manager")
+root.title("RetroArch Rom Manager")
 root.geometry("900x800")
 
 
-
-# roms 폴더의 서브 폴더들을 읽어서 드롭리스트에 추가
-# TODO: 별도 분리할 것
 def readSubDirs():        
-    subdirs = [f for f in os.listdir('roms/') if path.isdir(path.join('roms/', f))]
-    return subdirs
+    '''
+    roms 폴더의 하위 폴더를 읽어서 리스트로 반환한다.
+    '''
+    return os.listdir()
 
 def listSelectedDir(event):
     '''

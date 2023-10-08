@@ -16,9 +16,9 @@ def findSimilarImage(romName, allImages):
     import fuzzywuzzy.process as fuzzProcess
     return fuzzProcess.extractOne(romName, allImages)
 
-def getRomList(dirName):
-    dir = path.join(ROM_PATH, dirName)
-    roms = [f for f in os.listdir(dir) if f.endswith(EXT[dirName])]    
+def getRomList(subPath):
+    dir = path.join(ROM_PATH, subPath)
+    roms = [f for f in os.listdir(dir) if f.endswith(EXT[subPath])]    
     return roms
 
 

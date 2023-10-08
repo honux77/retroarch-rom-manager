@@ -1,18 +1,7 @@
+import json
 import os
+from os import path
 
-# constants for the project
-ROM_PATH="roms"
-IMAGE_PATH="images"
+configJson = json.load(open('config.json', 'r'))
 
-EXT = {
-    "fc":".nes" ,
-    "gb":".gb" ,
-    "gbc":".gbc" ,
-    "md":".md" ,
-    "cps1":".zip",
-    "ms":".sms" ,
-    "sg":".sg" ,    
-}
-
-# global variables
-targetDir = os.getcwd()
+ROM_PATH = configJson['basePath']
