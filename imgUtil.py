@@ -1,16 +1,14 @@
+import os
+from os import path
 from PIL import Image, ImageTk
 
-basePath = 'images/'
-from os import path
+from config import IMAGE_PATH
 
-def findImageFromRomName(romPath, romName):
-    imgName = path.splitext(romName)[0] + '.png'
-    fullPath = path.join(basePath, romPath, imgName)
-    print(fullPath)
+def findImage(romPath, imgName):    
+    fullPath = path.join(IMAGE_PATH, romPath, imgName)    
     if not path.exists(fullPath):
         return None
-    image = Image.open(fullPath)
-    print(image.format, image.size, image.mode)
-    photo = ImageTk.PhotoImage(image)
+    image = Image.open(fullPath)    
+    photo = ImageTk.PhotoImage(image)    
     return photo
 
