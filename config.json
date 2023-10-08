@@ -1,4 +1,6 @@
 {
     "basePath": "d:\\Retropie\\roms\\",    
-    "targetPath": "f:\\"    
+    "targetPath": "f:\\",    
+    "ext": ["zip", "chd", "dsk"],
+    "xmlList" : "gamelist.xml"
 }
