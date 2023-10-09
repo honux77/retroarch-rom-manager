@@ -11,19 +11,17 @@ from tkinter import simpledialog
 
 from PIL import ImageTk, Image
 
+# local module
+import config
+import xmlUtil
 import fileUtil
-import filenameUtil
-import imgUtil
-
-# set env from json file
-
-import json
-with open('config.json', 'r') as f:
-    config = json.load(f)
-    
 
 # change working directory
-os.chdir(config['basePath'])
+os.chdir(config.ROM_PATH)
+
+# global variable
+xmlGameList = None
+currentDir = os.getcwd()
 
 # Create instance
 root = tk.Tk()
@@ -34,55 +32,47 @@ root.geometry("900x800")
 def readSubDirs():        
     '''
     roms 폴더의 하위 폴더를 읽어서 리스트로 반환한다.
+    바이오스 폴더는 제외한다.
     '''
-    return os.listdir()
+    return [f for f in os.listdir() if path.isdir(f) and f != 'bios']
 
 def listSelectedDir(event):
     '''
     콤보 박스에서 폴더를 선택하면 해당 폴더의 롬 리스트를 보여준다.
+    이미지가 없을 경우 빨간색으로 표시한다.
     '''
-    dir = romBox.get()
-    import fileUtil
-
-    romList = fileUtil.getRomList(dir)
-    romList.sort()
+    global xmlGameList
+    romDir = romBox.get()
+    xmlGameList = xmlUtil.XmlGameList(romDir)
     
-    # get image list and cut extension
-    imgNameList = [path.splitext(f)[0] for f in fileUtil.getImgList(dir)]
-    
-    # delete romListBox
-    romListBox.delete(0, tk.END)    
-
-    #delete msgTextBox
+    # delete romListBox and msgTextBox
+    romListBox.delete(0, tk.END)        
     msgTextBox.delete(1.0, tk.END)
+    
+    imgFound = 0
+    imgMissCount = 0
 
-    found = 0
-    notFound = 0
-
-    for rom in romList:
-        romName = path.splitext(rom)[0]
-        romListBox.insert(tk.END, rom)                    
+    for game in xmlGameList.gameList:
+        romName = game['name']
+        romListBox.insert(tk.END, romName)                    
         
-        if romName not in imgNameList:
-            if found == 0:
-                msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
+        if not os.path.isfile(path.join(romDir, game['image'])):
+            if imgMissCount == 0: msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
 
             romListBox.itemconfig(tk.END, {'bg':'red'})
-            msgTextBox.insert(tk.INSERT, romName + ".png\n")      
+            msgTextBox.insert(tk.INSERT, game['image'] + "\n")      
 
             # 유사한 이름을 추천해 줌
-            similarImage = fileUtil.findSimilarImage(romName, imgNameList)
+            similarImage = fileUtil.findSimilarImage(romDir, romName, "box")
             msgTextBox.insert(tk.INSERT, "가장 유사한 이미지 이름: {}.png\n\n".format(similarImage[0]))
-            notFound += 1
-
+            imgMissCount += 1
         else:
-            found += 1
+            imgFound += 1
 
-    if notFound == 0:
-        msgTextBox.insert(tk.INSERT,"총 {}개의 롬의 모든 이미지가 정상적으로 존재합니다.".format(found))
+    if imgMissCount == 0:
+        msgTextBox.insert(tk.INSERT,"총 {}개의 롬의 모든 이미지가 정상적으로 존재합니다.".format(imgFound))
     else:           
-
-        msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(found + notFound, notFound))
+        msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
     # 첫번째 롬을 선택하고 이벤트를 발생시켜서 이미지 미리 보기를 실행
     romListBox.select_set(0)
@@ -101,88 +91,59 @@ def romListBoxSelectHandler(event):
     롬 선택시 이미지 미리 보기를 실행하는 핸들러
     event: tkinter의 이벤트 객체
     '''
+
+    global xmlGameList
     
     # 포커스를 잃을 경우 에러가 나는 문제 해결을 위한 코드
     if len(romListBox.curselection()) == 0: return
-    
-    romFile = romListBox.get(romListBox.curselection())
-    import imgUtil
-    imageName = path.splitext(romFile)[0] + '.png'    
-    imageTk = imgUtil.findImage(romBox.get(), imageName)
 
-    if len(imageName) > 20:
-        imageName = imageName[:20] + "..."
+    import imgUtil
+    romFile = romListBox.get(romListBox.curselection())  
+    iamgePath = xmlGameList.getImagePath(romFile) 
+    imageTk = imgUtil.findImage(romBox.get(), iamgePath)
+
+    if len(iamgePath) > 20:
+        iamgePath = iamgePath[:20] + "..."
 
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
         imgLabel.image = imageTk
         imgInfoLabel.configure(text="{} X {} ".format(imageTk.width(), imageTk.height()))
     else:
-        imgLabel.configure(image=baseImageTk)
-        imgInfoLabel.configure(text="{} Not Found".format(imageName))        
+        imgLabel.configure(image=baseImageTk, width=500)
+        imgInfoLabel.configure(text="{} Not Found".format(iamgePath))        
 
-# 다겟 티렉토리 지정
 def selectDir():
+    '''
+    openFile 다이얼로그를 열어 타겟 디렉토리를 지정한다.
+    '''
     global targetDir
     import openDir    
     print(targetDir)
     dir = openDir.openFileDialog(currentDir=targetDir)    
     if dir != None:               
-        if path.isdir(path.join(dir, 'roms')) and path.isdir(path.join(dir, 'images')):
+        if path.isdir(dir):
              targetDir = dir
              debug("타겟 디렉토리 변경: " +targetDir)
         else:
             debug("디렉토리 변경 실패")    
 
-# 롬 파일 및 이미지 삭제 이벤트 핸들러
-def deleteRomAndImages():
+
+def deleteRomAndImageHandler():
+    '''
+    선택된 롬과 이미지를 삭제하는 핸들러
+    '''
+
+    # 먼저 파일과 이미지를 삭제한다.
     romName = romListBox.get(romListBox.curselection())
-    subPath = romBox.get()
-    fileUtil.deleteRomAndImages(subPath, romName)
-    romBox.event_generate("<<ComboboxSelected>>")
+    romDir = romBox.get()
+    fileUtil.deleteRomAndImages(romDir, romName, xmlGameList.getImagePath(romName))
 
-# 롬 및 이미지 이름 변경 핸들러
-def renameRomAndImages():
-    oldName = path.splitext(romListBox.get(romListBox.curselection()))[0]
-    # show input dialog
-    newName = simpledialog.askstring("롬 이름 변경", "변경할 롬 이름을 입력하세요", initialvalue=oldName)
-
-    if newName == None or newName == "" or newName == oldName:
-        debug("롬 이름 변경 취소")
-        return
-        
-    filenameUtil.renameRomAndImages(romBox.get(), oldName, newName)
-    debug("롬 이름 변경 완료")
-    romBox.event_generate("<<ComboboxSelected>>")
+    # 롬리스트에서도 해당 목록을 제거한다.
+    xmlGameList.remove(romName)
     
-
-
-# 이미지 크롭 및 리사이즈 핸들러
-def resizeAllImages():
-    import imageCrop
-    subPath = romBox.get()
-    n = imageCrop.resizeAndCropAll(subPath, msgTextBox)
-    debug("{} 이미지 리사이즈 완료".format(n))
-
-# 롬 이름 단순화 핸들러
-def simplifyRomName():
-    subPath = romBox.get()
-    msgTextBox.delete(1.0, tk.END)
-    msgTextBox.insert(tk.INSERT, "=== 롬 이름 단순화 시작 ===\n")    
-    n = filenameUtil.simplifyRomName(subPath, msgTextBox)
-    msgTextBox.insert(tk.INSERT, "\n{} 롬 이름 단순화 완료\n".format(n))
-    debug("{} 롬 이름 단순화 완료".format(n)) 
-    
-
-# 이미지 이름 단순화 핸들러
-def simplifyImageName():
-    subPath = romBox.get()
-    msgTextBox.delete(1.0, tk.END)
-    msgTextBox.insert(tk.INSERT, "=== 이미지 이름 단순화 시작 ===\n")    
-    n = filenameUtil.simplifyImageName(subPath, msgTextBox)
-    msgTextBox.insert(tk.INSERT, "\n{} 이미지 이름 단순화 완료\n".format(n))
-    debug("{} 이미지 이름 단순화 완료".format(n))
-
+    # 롬 리스트를 다시 읽어서 보여준다.
+    romBox.event_generate("<<ComboboxSelected>>")
 
 ########################
 # 중첩 프레임          #
@@ -204,7 +165,6 @@ buttonFrame = ttk.Frame(root)
 buttonFrame.grid(column=1, row=2, pady=5, padx=5)
 
 # 롬 폴더 선택 프레임
-
 label = ttk.Label(titleFrame, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
@@ -241,7 +201,7 @@ msgTextBox.grid(column=0, row=1, padx=5, pady=5)
 label4 = ttk.Label(imagePreviewFrame, text="이미지 미리 보기")
 label4.grid(column=0, row=0, pady=5, padx=5)
 # 이미지 표시용 라벨
-baseImageTk = ImageTk.PhotoImage(Image.open("images/base.png"))
+baseImageTk = ImageTk.PhotoImage(Image.open(config.BASE_IMAGE))
 imgLabel = ttk.Label(imagePreviewFrame, image=baseImageTk)
 imgLabel.grid(column=0, row=1, pady=5, padx=5)
 # 이미지 정보표시 라벨
@@ -265,40 +225,23 @@ folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
 folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(targetDir))
 folderSelectButton.grid(column=1, row=0, pady=5, padx=5)
 
-# 이미지 리사이즈 버튼
-imageResizeButton = ttk.Button(buttonFrame, text="이미지 리사이즈", command=resizeAllImages)
-imageResizeButton.grid(column=2, row=0, pady=5, padx=5)
-
-# 롬 이름 단순화 버튼
-romNameSimplifyButton = ttk.Button(buttonFrame, text="롬 이름 단순화", command=simplifyRomName)
-romNameSimplifyButton.grid(column=0, row=1, pady=5, padx=5)
-
-# 이미지 이름 단순화 버튼
-romNameSimplifyButton = ttk.Button(buttonFrame, text="이미지 이름 단순화", command=simplifyImageName)
-romNameSimplifyButton.grid(column=1, row=1, pady=5, padx=5)
-
-
 # 롬 폴더 열기 버튼
 romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: os.startfile(path.join('roms', romBox.get())))
 romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
-imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: os.startfile(path.join('images', romBox.get())))
+imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: os.startfile(path.join(romBox.get(),'box')))
 imgFolderOpenButton.grid(column=1, row=2, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
-fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImages)
+fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
 fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
-
-# 롬 파일 및 이미지 이름 변경
-fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 이름변경", command=renameRomAndImages)
-fileDeleteButton.grid(column=1, row=3, pady=5, padx=5)
 
 # 마지막으로 최초 선택된 폴더의 롬 리스트를 보여줌
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.
-ico = Image.open('icon16.png')
+ico = Image.open(config.ICON)
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
 root.mainloop()

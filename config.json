@@ -1,6 +1,8 @@
-{
+{    
     "basePath": "d:\\Retropie\\roms\\",    
     "targetPath": "f:\\",    
     "ext": ["zip", "chd", "dsk"],
-    "xmlList" : "gamelist.xml"
+    "xmlList" : "gamelist.xml",    
+    "baseImage": "C:\\games\\fc-pocket-rom-manager\\base.png",
+    "icon": "C:\\games\\fc-pocket-rom-manager\\icon16.png"
 }

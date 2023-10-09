@@ -4,30 +4,22 @@ import re
 import tkinter as tk
 from tkinter import messagebox as mBox
 
-from config import ROM_PATH, IMAGE_PATH, EXT
+from config import ROM_PATH, EXT
 
 
-def findSimilarImage(romName, allImages):
+
+def findSimilarImage(romDir, romName, imgDir):
+    
     '''
-    romName과 가장 유사한 이미지 파일명을 찾아서 반환한다.
-    romName: 롬 파일명
-    allImages: 이미지 파일명 리스트
+    romName과 가장 유사한 이미지 이름을 찾아서 반환한다.
+    romDir: roms 폴더의 하위 폴더
+    romName: 롬 이름
+    imgDir: rom 폴더 하위의 images 폴더
     '''
+    
     import fuzzywuzzy.process as fuzzProcess
+    allImages = [f for f in os.listdir(path.join(romDir, imgDir)) if path.isfile(path.join(romDir, imgDir, f))]    
     return fuzzProcess.extractOne(romName, allImages)
-
-def getRomList(subPath):
-    dir = path.join(ROM_PATH, subPath)
-    roms = [f for f in os.listdir(dir) if f.endswith(EXT[subPath])]    
-    return roms
-
-
-def getImgList(dirName):
-    import os
-    from os import path
-    dir = path.join(IMAGE_PATH, dirName)
-    imgs = [f for f in os.listdir(dir) if f.endswith('.png')]
-    return imgs
 
 def imageDelete(imgPath, romPath):
     import os
@@ -68,5 +60,6 @@ def deleteRomAndImages(subPath, romName):
 
 # main function for test
 if __name__ == "__main__":
-    print("Test getRomList")
-    print(getRomList('fc'))
+    os.chdir(ROM_PATH)
+    print("Test for Similar Image")
+    print(findSimilarImage('gb', "Super Mario world", "box"))

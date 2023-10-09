@@ -100,6 +100,11 @@ def addProperties(subRomDir):
             fileName = path.splitext(game.find('path').text)[0][2:]
             image.text =  "./box/" + fileName + ".png"
             image.tail = '\n\t\t'
+        
+        # images 경로가 box가 아닌 경우 box로 변경한다.
+        if game.find('image').text[:7] != './box/':
+            game.find('image').text = './box/' + path.basename(game.find('image').text)
+            game.find('image').tail = '\n\t\t'
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
 def changeTitleToKorean(subRomDir):
@@ -122,8 +127,10 @@ def changeTitleToKorean(subRomDir):
 
 subDirs = [f for f in os.listdir('.') if os.path.isdir(f) and f != 'bios']
 
-for dir in subDirs:
-    cleanList(dir)    
-    addProperties(dir)
-    addGame(dir)
-    changeTitleToKorean(dir)
+# for dir in subDirs:
+#     cleanList(dir)    
+#     addProperties(dir)
+#     addGame(dir)
+#     changeTitleToKorean(dir)
+
+addProperties('fbneo')
