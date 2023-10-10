@@ -74,7 +74,7 @@ def addGame(subRomDir):
             print(file, "is added.")     
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')   
 
-def addProperties(subRomDir):
+def updateProperties(subRomDir):
     '''
     롬 리스트에 필수 속성이 없을 경우 추가한다.
     필수 속성: rating, image
@@ -98,13 +98,14 @@ def addProperties(subRomDir):
             image = ET.SubElement(game, 'image')
             # get filename without extension
             fileName = path.splitext(game.find('path').text)[0][2:]
-            image.text =  "./media/images" + fileName + ".png"
+            image.text =  "./media/images/" + fileName + ".png"
             image.tail = '\n\t\t'
         
-        # # images 경로가 box가 아닌 경우 box로 변경한다.
-        # if game.find('image').text[:7] != './box/':
-        #     game.find('image').text = './box/' + path.basename(game.find('image').text)
-        #     game.find('image').tail = '\n\t\t'
+        # image 경로가 ./ 로 시작하지 않으면 ./를 추가한다.
+        if game.find('image').text[:2] != './':
+            game.find('image').text = './' + game.find('image').text
+            game.find('image').tail = '\n\t\t'
+        
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
 def changeTitleToKorean(subRomDir):
@@ -129,13 +130,11 @@ def changeTitleToKorean(subRomDir):
                 print("변경된 타이틀 제목", game.find('name').text)
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
-
-
 subDirs = [f for f in os.listdir('.') if os.path.isdir(f) and f != 'bios']
 
-# for dir in subDirs:
-#     cleanList(dir)    
-#     addProperties(dir)
-#     addGame(dir)
-
-addProperties('gbc')
+for dir in ['gb', 'gbc']:
+    cleanList(dir)    
+    updateProperties(dir)
+    addGame(dir)
+    
+    

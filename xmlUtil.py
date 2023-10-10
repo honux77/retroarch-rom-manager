@@ -18,19 +18,46 @@ class XmlGameList:
         self.tree = ET.parse(self.xmlPath)
         self.games = self.tree.getroot()
         self.gameList = []
-        for game in self.games:            
+        update = False
+        for game in self.games:  
+
+            # image path가 없는 경우 추가
+            if game.find('image') is None:
+                image = ET.SubElement(game, 'image')
+                # get filename without extension
+                fileName = path.splitext(game.find('path').text)[0][2:]
+                image.text =  "./media/images/" + fileName + ".png"
+                image.tail = '\n\t\t'
+                update = True
+
+            # image 경로가 ./ 로 시작하지 않으면 ./를 추가한다.
+            if game.find('image').text[:2] != './':
+                game.find('image').text = './' + game.find('image').text
+                game.find('image').tail = '\n\t\t'
+                update = True
+            
+            # rating이 없는 경우 추가
+            if game.find('rating') is None:
+                rating = ET.SubElement(game, 'rating')
+                rating.text = '0.6'
+                rating.tail = '\n\t\t'
+                update = True
+
             self.gameList.append(
                 {
                     'name': game.find('name').text,
                     'path': game.find('path').text,
                     'image': game.find('image').text,
-                    'rating': game.find('rating').text
+                    'rating': game.find('rating').text,
                 }
             )
 
         # sort by name
         self.gameList.sort(key=lambda x: x['name'])
 
+        # update XML file
+        if update:
+            self.tree.write(self.xmlPath, 'UTF-8')
     
     def findGame(self, name):
         '''find game from gameList'''
