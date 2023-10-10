@@ -6,8 +6,6 @@ from tkinter import messagebox as mBox
 
 from config import ROM_PATH, EXT
 
-
-
 def findSimilarImage(romDir, romName, imgDir):
     
     '''
@@ -18,6 +16,7 @@ def findSimilarImage(romDir, romName, imgDir):
     '''
     
     import fuzzywuzzy.process as fuzzProcess
+    print(os.getcwd(), romDir, imgDir)
     allImages = [f for f in os.listdir(path.join(romDir, imgDir)) if path.isfile(path.join(romDir, imgDir, f))]    
     return fuzzProcess.extractOne(romName, allImages)
 

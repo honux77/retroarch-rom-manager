@@ -28,7 +28,7 @@ lastRom = config.LAST_ROM
 # Create instance
 root = tk.Tk()
 root.title("RetroArch Rom Manager")
-root.geometry("900x800")
+root.geometry("1200x900")
 
 
 def readSubDirs():        
@@ -65,9 +65,11 @@ def listSelectedDir(event):
             romListBox.itemconfig(tk.END, {'bg':'red'})
             msgTextBox.insert(tk.INSERT, game['image'] + "\n")      
 
-            # 유사한 이름을 추천해 줌
-            similarImage = fileUtil.findSimilarImage(romDir, romName, "box")
-            msgTextBox.insert(tk.INSERT, "가장 유사한 이미지 이름: {}.png\n\n".format(similarImage[0]))
+            # Image 경로에서 디렉토리 이름을 추출한다.
+            imgDir =  path.dirname(game['image'])
+            similarImage = fileUtil.findSimilarImage(romDir, romName, imgDir)
+            if similarImage != None:
+                msgTextBox.insert(tk.INSERT, "가장 유사한 이미지 이름: {}.png\n\n".format(similarImage[0]))
             imgMissCount += 1
         else:
             imgFound += 1
@@ -110,11 +112,9 @@ def romListBoxSelectHandler(event):
 
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
-        imgLabel.image = imageTk
-        imgInfoLabel.configure(text="{} X {} ".format(imageTk.width(), imageTk.height()))
+        imgLabel.image = imageTk        
     else:
-        imgLabel.configure(image=baseImageTk, width=500)
-        imgInfoLabel.configure(text="{} Not Found".format(iamgePath))        
+        imgLabel.configure(image=baseImageTk, width=500)        
 
 def deleteRomAndImageHandler():
     '''
@@ -136,20 +136,30 @@ def deleteRomAndImageHandler():
 # 중첩 프레임          #
 ########################
 
+# 타이틀 프레임
+# 롬 선택 콤보 박스와 새로고침 버튼이 있는 프레임
 titleFrame = ttk.Frame(root)
 titleFrame.grid(column=1, row=0, pady=5, padx=5)
 
+# 롬 리스트 프레임
 romListFrame = ttk.Frame(root)
 romListFrame.grid(column=0, row=1, pady=5, padx=5)
 
+# 롬 세부 정보 프레임
+detailedRomInfoFrame = ttk.Frame(root)
+detailedRomInfoFrame.grid(column=1, row=1, pady=5, padx=5)
+
+# 메시지용 프레임
 outputMessageFrame = ttk.Frame(root)
-outputMessageFrame.grid(column=1, row=1, pady=5, padx=5)
+outputMessageFrame.grid(column=0, row=2, pady=5, padx=5)
 
+# 이미지 미리보기 프레임
 imagePreviewFrame = ttk.Frame(root)
-imagePreviewFrame.grid(column=0, row=2, pady=5, padx=5)
+imagePreviewFrame.grid(column=1, row=2, pady=5, padx=5)
 
+# 버튼 프레임
 buttonFrame = ttk.Frame(root)
-buttonFrame.grid(column=1, row=2, pady=5, padx=5)
+buttonFrame.grid(column=2, row=1, pady=5, padx=5, rowspan=2)
 
 # 롬 폴더 선택 프레임
 label = ttk.Label(titleFrame, text="롬 폴더")
@@ -170,31 +180,34 @@ label2 = ttk.Label(romListFrame, text="롬 리스트")
 label2.grid(column=0, row=0, pady=5, padx=5)
 from tkinter import Listbox
 romListBox = Listbox(romListFrame)
-romListBox.config(height=20, width= 50)
+romListBox.config(height=20, width= 60)
 romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
 romListBox.grid(column=0, row=1, padx=5, pady=5)
 
+# 롬 세부 정보
+romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="롬 세부 정보")
+romDescriptionLabel.grid(column=0, row=0, pady=5, padx=5)
+# 롬 세부 정보는 테이블 형태로 표현
+from tkinter import ttk
+romInfoTable = ttk.Treeview(detailedRomInfoFrame)
+romInfoTable['columns'] = ('name', 'value')
 
 # 출력 메시지
 label3 = ttk.Label(outputMessageFrame, text="출력 메시지")
 label3.grid(column=0, row=0, pady=5, padx=5)
 # 메시지 출력용 텍스트 박스
 msgTextBox = Text(outputMessageFrame)
-msgTextBox.config(height=25, width= 70)
+msgTextBox.config(height=30, width= 60)
 msgTextBox.grid(column=0, row=1, padx=5, pady=5)
 
 
 # 이미지 미리보기
 label4 = ttk.Label(imagePreviewFrame, text="이미지 미리 보기")
 label4.grid(column=0, row=0, pady=5, padx=5)
-# 이미지 표시용 라벨
+# 포토 이미지 라벨
 baseImageTk = ImageTk.PhotoImage(Image.open(config.BASE_IMAGE))
 imgLabel = ttk.Label(imagePreviewFrame, image=baseImageTk)
 imgLabel.grid(column=0, row=1, pady=5, padx=5)
-# 이미지 정보표시 라벨
-imgInfoLabel = ttk.Label(imagePreviewFrame, text="이미지 정보")
-imgInfoLabel.grid(column=0, row=2, pady=5, padx=5)
-
 
 # debug label
 debugLabel = ttk.Label(root, text="debug")
@@ -206,15 +219,15 @@ debugLabel.grid(column=0, row=3, columnspan=2, pady=5, padx=5)
 
 # 폴더 찾기 버튼
 folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(targetDir))
-folderSelectButton.grid(column=1, row=0, pady=5, padx=5)
+folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
 romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: os.startfile(romBox.get()))
-romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
+romFolderOpenButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
 imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: os.startfile(path.join(romBox.get(),'box')))
-imgFolderOpenButton.grid(column=1, row=2, pady=5, padx=5)
+imgFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
