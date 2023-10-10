@@ -22,6 +22,8 @@ os.chdir(config.ROM_PATH)
 # global variable
 xmlGameList = None
 currentDir = os.getcwd()
+targetDir = config.TARGET_PATH
+lastRom = config.LAST_ROM
 
 # Create instance
 root = tk.Tk()
@@ -35,6 +37,7 @@ def readSubDirs():
     바이오스 폴더는 제외한다.
     '''
     return [f for f in os.listdir() if path.isdir(f) and f != 'bios']
+
 
 def listSelectedDir(event):
     '''
@@ -74,7 +77,7 @@ def listSelectedDir(event):
     else:           
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
-    # 첫번째 롬을 선택하고 이벤트를 발생시켜서 이미지 미리 보기를 실행
+    # 첫 번째 롬을 선택하고 이벤트를 발생시켜 이미지를 미리 보여준다.
     romListBox.select_set(0)
     romListBox.event_generate("<<ListboxSelect>>")
     
@@ -112,22 +115,6 @@ def romListBoxSelectHandler(event):
     else:
         imgLabel.configure(image=baseImageTk, width=500)
         imgInfoLabel.configure(text="{} Not Found".format(iamgePath))        
-
-def selectDir():
-    '''
-    openFile 다이얼로그를 열어 타겟 디렉토리를 지정한다.
-    '''
-    global targetDir
-    import openDir    
-    print(targetDir)
-    dir = openDir.openFileDialog(currentDir=targetDir)    
-    if dir != None:               
-        if path.isdir(dir):
-             targetDir = dir
-             debug("타겟 디렉토리 변경: " +targetDir)
-        else:
-            debug("디렉토리 변경 실패")    
-
 
 def deleteRomAndImageHandler():
     '''
@@ -218,15 +205,11 @@ debugLabel.grid(column=0, row=3, columnspan=2, pady=5, padx=5)
 #######################################
 
 # 폴더 찾기 버튼
-folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 지정", command=selectDir)
-folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
-
-# 폴더 찾기 버튼
 folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(targetDir))
 folderSelectButton.grid(column=1, row=0, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
-romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: os.startfile(path.join('roms', romBox.get())))
+romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: os.startfile(romBox.get()))
 romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
@@ -237,7 +220,9 @@ imgFolderOpenButton.grid(column=1, row=2, pady=5, padx=5)
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
 fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
 
-# 마지막으로 최초 선택된 폴더의 롬 리스트를 보여줌
+# 마지막으로 선택된 폴더의 롬 리스트를 보여줌
+if lastRom in romBox['values']:
+    romBox.set(lastRom)
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.

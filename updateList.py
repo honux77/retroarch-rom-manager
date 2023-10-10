@@ -98,13 +98,13 @@ def addProperties(subRomDir):
             image = ET.SubElement(game, 'image')
             # get filename without extension
             fileName = path.splitext(game.find('path').text)[0][2:]
-            image.text =  "./box/" + fileName + ".png"
+            image.text =  "./media/images" + fileName + ".png"
             image.tail = '\n\t\t'
         
-        # images 경로가 box가 아닌 경우 box로 변경한다.
-        if game.find('image').text[:7] != './box/':
-            game.find('image').text = './box/' + path.basename(game.find('image').text)
-            game.find('image').tail = '\n\t\t'
+        # # images 경로가 box가 아닌 경우 box로 변경한다.
+        # if game.find('image').text[:7] != './box/':
+        #     game.find('image').text = './box/' + path.basename(game.find('image').text)
+        #     game.find('image').tail = '\n\t\t'
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
 def changeTitleToKorean(subRomDir):
@@ -114,13 +114,19 @@ def changeTitleToKorean(subRomDir):
     from os import path
     tree = ET.parse(path.join(subRomDir, xmlList))
     games = tree.getroot()
-    for game in games:
+    changeCount = 0
+
+    for i in range(len(games)):
+        game = games[i]
+
         if game.find('name').text.isascii():
-            print("영문 타이틀을 찾았습니다.", game.find('name').text, game.find('path').text)
-            newTilte = input("새로운 한글 제목을 입력하세요: (엔터 입력시 변경하지 않음)")
-            if newTilte != "":
-                game.find('name').text = newTilte
-                print("변경되었습니다.", game.find('name').text)
+            print("{}. {}\t{}".format(i, game.find('name').text, game.find('path').text))
+            newTitle = input("새로운 한글 제목을 입력하세요: (엔터 입력시 변경하지 않음)")
+            if newTitle == ".quit":
+                break
+            if newTitle != "":
+                game.find('name').text = newTitle
+                print("변경된 타이틀 제목", game.find('name').text)
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
 
@@ -131,6 +137,5 @@ subDirs = [f for f in os.listdir('.') if os.path.isdir(f) and f != 'bios']
 #     cleanList(dir)    
 #     addProperties(dir)
 #     addGame(dir)
-#     changeTitleToKorean(dir)
 
-addProperties('fbneo')
+addProperties('gbc')

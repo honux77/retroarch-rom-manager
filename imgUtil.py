@@ -4,11 +4,11 @@ from PIL import Image, ImageTk
 
 from config import ROM_PATH
 
-def findImage(romDir, imgPath):        
+def findImage(romDir, imgPath):      
     maxWidth = 300
     maxHeight = 300
 
-    fullPath = path.join(romDir, imgPath)    
+    fullPath = path.join(romDir, imgPath)        
     if not path.isfile(fullPath):
         return None
     image = Image.open(fullPath)        
