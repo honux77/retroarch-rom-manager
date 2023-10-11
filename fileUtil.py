@@ -1,3 +1,7 @@
+'''
+파일 관련 유틸리티 함수들
+'''
+
 import os
 from os import path
 import re
@@ -5,6 +9,13 @@ import tkinter as tk
 from tkinter import messagebox as mBox
 
 from config import ROM_PATH, EXT
+
+def readSubDirs():        
+    '''
+    roms 폴더의 하위 폴더를 읽어서 리스트로 반환한다.
+    바이오스 폴더는 제외한다.
+    '''
+    return [f for f in os.listdir() if path.isdir(f) and f != 'bios']
 
 def findSimilarImage(romDir, romName, imgDir):
     
@@ -43,18 +54,21 @@ def printRomInfo(imgPath, romPath):
         if f not in imgs:
             print("Image not exists: ", f)
 
-def deleteRomAndImages(subPath, romName):
+def deleteRomAndImages(subPath, romPath, imggePath):
     msg = ""
-    result = mBox.askquestion("삭제", "선택된 롬과 이미지를 삭제하시겠습니까?")
-    rom = path.join('roms/', subPath, romName)
-    name = path.splitext(romName)[0]
-    img = path.join('images/', subPath, name + '.png')
+    result = mBox.askquestion("삭제", "{}\n {}\n 선택된 롬과 이미지를 삭제하시겠습니까?".format(romPath, imggePath))
+
+    if result == 'no':
+        return "삭제 취소"
+    
+    rom = path.join(subPath, romPath)    
+    img = path.join(subPath, imggePath)
     os.remove(rom)
     try:
         os.remove(img)    
     except:
         return "이미지 삭제 실패"
-    return romName + " 삭제 성공"
+    return romPath + " 삭제 성공"
 
 # main function for test
 if __name__ == "__main__":

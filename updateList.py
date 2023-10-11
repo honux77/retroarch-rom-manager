@@ -128,11 +128,14 @@ def changeTitleToKorean(subRomDir):
             if newTitle != "":
                 game.find('name').text = newTitle
                 print("변경된 타이틀 제목", game.find('name').text)
+                changeCount += 1
+    
+    print("총 {}개의 타이틀이 변경되었습니다.".format(changeCount))
     tree.write(path.join(subRomDir, xmlList), 'UTF-8')
 
 subDirs = [f for f in os.listdir('.') if os.path.isdir(f) and f != 'bios']
 
-for dir in ['gb', 'gbc']:
+for dir in ['gb', 'gbc', 'gba']:
     cleanList(dir)    
     updateProperties(dir)
     addGame(dir)
