@@ -8,7 +8,8 @@ import re
 import tkinter as tk
 from tkinter import messagebox as mBox
 
-from config import ROM_PATH, EXT
+from config import Config
+cfg = Config()
 
 def readSubDirs():        
     '''

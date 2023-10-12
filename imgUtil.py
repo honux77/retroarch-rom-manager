@@ -2,8 +2,6 @@ import os
 from os import path
 from PIL import Image, ImageTk
 
-from config import ROM_PATH
-
 def findImage(romDir, imgPath):      
     maxWidth = 400
     maxHeight = 400

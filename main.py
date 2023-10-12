@@ -16,24 +16,28 @@ from config import *
 from xmlUtil import *
 from fileUtil import *
 
-# change working directory
-os.chdir(ROM_PATH)
+# load config
+cfg = Config()
 
 # global variable
 xmlGameList = None
-currentDir = os.getcwd()
-targetDir = TARGET_PATH
-# 마지막에 열었던 서브롬 폴더 이름
-lastRom = LAST_ROM
-
-# 마지막에 선택했던 롬파일 인덱스
+lastRom = ""
 lastRomIdx = 0
-lastRomName = ""
+programPath = os.getcwd()
 
 # Create instance
 root = tk.Tk()
 root.title("RetroArch Rom Manager")
 root.geometry("1200x900")
+
+# 현재 디렉토리의 리소스 디렉토리에서 아이콘과 기본 이미지를 읽어온다.
+baseImage = Image.open("./resources/base.png")
+baseImageTk = ImageTk.PhotoImage(baseImage)
+ico = Image.open("./resources/icon16.png")
+photo = ImageTk.PhotoImage(ico)
+
+# 작업 디렉토리를 변경한다.
+os.chdir(cfg.getBasePath())
 
 def subRomBoxHandler(event):
     '''
@@ -57,15 +61,11 @@ def subRomBoxHandler(event):
         romListBox.insert(tk.END, romName)                    
         
         if not os.path.isfile(path.join(romDir, game['image'])):
-            if imgMissCount == 0: msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
-
+            if imgMissCount == 0:
+                msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
+            
             romListBox.itemconfig(tk.END, {'bg':'red'})
             msgTextBox.insert(tk.INSERT, game['image'] + "\n")      
-
-            # 이미지 디렉토리에서 가장 유사한 이미지를 찾아서 보여준다.
-            similarImage = findSimilarImage(romDir, romName, path.dirname(game['image']))
-            if similarImage != None:
-                msgTextBox.insert(tk.INSERT, "가장 유사한 이미지 이름: {}\n\n".format(similarImage[0]))
             imgMissCount += 1
         else:
             imgFound += 1
@@ -190,6 +190,21 @@ romBox.bind("<<ComboboxSelected>>", subRomBoxHandler)
 refreshButton = ttk.Button(titleFrame, text="새로고침", command=lambda: romBox.event_generate("<<ComboboxSelected>>"))
 refreshButton.grid(column=2, row=0, pady=5, padx=5)
 
+# 환경설정 버튼
+# 환경설정을 위한 모달창을 열어준다.
+def openSettingDialog():
+    '''
+    환경설정을 위한 모달창을 열어준다.
+    '''
+    global targetDir, lastRom
+    targetDir = simpledialog.askdirectory(title="대상 폴더 선택", initialdir=targetDir)
+    lastRom = simpledialog.askstring("마지막 열었던 롬", "마지막으로 열었던 롬 폴더 이름을 입력하세요.", initialvalue=lastRom)
+    romBox['values'] = readSubDirs()
+    romBox.set(lastRom)
+    romBox.event_generate("<<ComboboxSelected>>")
+setupButton = ttk.Button(titleFrame, text="환경설정", command=openSettingDialog)
+setupButton.grid(column=3, row=0, pady=5, padx=5)    
+
 # 롬 리스트
 label2 = ttk.Label(romListFrame, text="롬 리스트")
 label2.grid(column=0, row=0, pady=5, padx=5)
@@ -263,8 +278,6 @@ def updateRomInfoHandler():
 romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
 romUpdateButton.grid(column=1, row=5, pady=5, padx=5)
 
-
-
 # 롬 세부 정보
 
 # 출력 메시지
@@ -279,8 +292,8 @@ msgTextBox.grid(column=0, row=1, padx=5, pady=5)
 # 이미지 미리보기
 label4 = ttk.Label(imagePreviewFrame, text="이미지 미리 보기")
 label4.grid(column=0, row=0, pady=5, padx=5)
+
 # 포토 이미지 라벨
-baseImageTk = ImageTk.PhotoImage(Image.open(BASE_IMAGE))
 imgLabel = ttk.Label(imagePreviewFrame, image=baseImageTk)
 imgLabel.grid(column=0, row=1, pady=5, padx=5)
 
@@ -314,7 +327,5 @@ if lastRom in romBox['values']:
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.
-ico = Image.open(ICON)
-photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
 root.mainloop()
