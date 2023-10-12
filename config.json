@@ -3,5 +3,5 @@
     "targetPath": "f:\\",    
     "extension": ["zip", "chd", "dsk"],
     "xmlName" : "gamelist.xml",    
-    "lastSubRomDirectory": "gba"
+    "lastSubRomDirectory": "gba-test"
 }

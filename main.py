@@ -21,7 +21,7 @@ cfg = Config()
 
 # global variable
 xmlGameList = None
-lastRom = ""
+lastRomFilename = ""
 lastRomIdx = 0
 programPath = os.getcwd()
 
@@ -322,8 +322,8 @@ fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", c
 fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
 
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
-if lastRom in romBox['values']:
-    romBox.set(lastRom)
+if  cfg.getLastRomDir() in romBox['values']:
+    romBox.set(cfg.getLastRomDir())
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.
