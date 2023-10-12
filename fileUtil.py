@@ -13,10 +13,12 @@ cfg = Config()
 
 def readSubDirs():        
     '''
-    roms 폴더의 하위 폴더를 읽어서 리스트로 반환한다.
-    바이오스 폴더는 제외한다.
+    roms 폴더의 하위 폴더를 읽어서 정렬된 리스트로 반환한다.
+    바이오스 폴더는 제외한다.    
     '''
-    return [f for f in os.listdir() if path.isdir(f) and f != 'bios']
+    romDir = [f for f in os.listdir() if path.isdir(f) and f != 'bios']
+    romDir.sort()
+    return romDir
 
 def findSimilarImage(romDir, romName, imgDir):
     

@@ -75,7 +75,7 @@ def subRomBoxHandler(event):
     else:           
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
-    # 첫 번째 롬을 선택하고 이벤트를 발생시켜 이미지를 미리 보여준다.
+    # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.
     global lastRomIdx
     if lastRomIdx >= romListBox.size():
         lastRomIdx = romListBox.size() - 1
@@ -191,18 +191,8 @@ refreshButton = ttk.Button(titleFrame, text="새로고침", command=lambda: romB
 refreshButton.grid(column=2, row=0, pady=5, padx=5)
 
 # 환경설정 버튼
-# 환경설정을 위한 모달창을 열어준다.
-def openSettingDialog():
-    '''
-    환경설정을 위한 모달창을 열어준다.
-    '''
-    global targetDir, lastRom
-    targetDir = simpledialog.askdirectory(title="대상 폴더 선택", initialdir=targetDir)
-    lastRom = simpledialog.askstring("마지막 열었던 롬", "마지막으로 열었던 롬 폴더 이름을 입력하세요.", initialvalue=lastRom)
-    romBox['values'] = readSubDirs()
-    romBox.set(lastRom)
-    romBox.event_generate("<<ComboboxSelected>>")
-setupButton = ttk.Button(titleFrame, text="환경설정", command=openSettingDialog)
+import setup
+setupButton = ttk.Button(titleFrame, text="환경설정", command=lambda: setup.openSetupWindow(root))
 setupButton.grid(column=3, row=0, pady=5, padx=5)    
 
 # 롬 리스트
