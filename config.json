@@ -1,7 +1,1 @@
-{
-    "basePath": "d:\\Retropie\\roms\\",    
-    "targetPath": "f:\\",    
-    "extension": ["zip", "chd", "dsk"],
-    "xmlName" : "gamelist.xml",    
-    "lastSubRomDirectory": "gba-test"
-}
+{"basePath": "D:/Retropie/roms", "targetPath": "f:\\", "extension": ["zip", "chd", "dsk"], "xmlName": "gamelist.xml", "lastSubRomDirectory": "fbneo"}

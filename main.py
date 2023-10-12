@@ -46,8 +46,11 @@ def subRomBoxHandler(event):
     없는 이미지는 가장 유사한 이미지 이름을 찾아서 보여준다.
     '''    
     global xmlGameList
-    romDir = romBox.get()
+    romDir = romBox.get()    
     xmlGameList = XmlGameList(romDir)
+    if xmlGameList.tree == None:
+        mBox.showerror("XML 파일 없음", "XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
+        return
     
     # 롬리스트박스와 메시지 박스를 초기화한다.
     romListBox.delete(0, tk.END)        
@@ -127,6 +130,8 @@ def romListBoxSelectHandler(event):
     romPathEntry.insert(0, game['path'])
     romImageEntry.delete(0, tk.END)
     romImageEntry.insert(0, game['image'])
+    romRatingEntry.delete(0, tk.END)
+    romRatingEntry.insert(0, game['rating'])
     romDescriptionText.delete(1.0, tk.END)
     romDescriptionText.insert(1.0, game['desc'])
 
@@ -181,19 +186,32 @@ label = ttk.Label(titleFrame, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
 # 폴더 선택 콤보 박스
-romBox = ttk.Combobox(titleFrame, values=readSubDirs())
-romBox.current(0)
+subDirs = readSubDirs()
+basePath = cfg.getBasePath()
+
+while len(subDirs) == 0:
+    # 서브 롬 폴더가 없을 경우 파일 다이얼로그를 열어서 폴더를 선택하도록 한다.
+    # 폴더 선택 후 다시 서브 롬 폴더를 읽어온다.
+    
+    # 오류 메시지 표시
+    mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 선택해 주세요.")
+    from tkinter import filedialog    
+    basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
+    os.chdir(basePath)
+    subDirs = readSubDirs()
+
+# 설정 업데이트
+cfg.setBasePath(basePath)    
+
+romBox = ttk.Combobox(titleFrame, values=subDirs)
+
+
 romBox.grid(column=1, row=0, padx=5, pady=5)
 romBox.bind("<<ComboboxSelected>>", subRomBoxHandler)
 
 # 새로고침 버튼 
 refreshButton = ttk.Button(titleFrame, text="새로고침", command=lambda: romBox.event_generate("<<ComboboxSelected>>"))
 refreshButton.grid(column=2, row=0, pady=5, padx=5)
-
-# 환경설정 버튼
-import setup
-setupButton = ttk.Button(titleFrame, text="환경설정", command=lambda: setup.openSetupWindow(root))
-setupButton.grid(column=3, row=0, pady=5, padx=5)    
 
 # 롬 리스트
 label2 = ttk.Label(romListFrame, text="롬 리스트")
@@ -228,15 +246,15 @@ romRatingEntry.grid(column=1, row=3, pady=5, padx=5)
 
 # 이미지 경로
 romImageLabel = ttk.Label(detailedRomInfoFrame, text="이미지 경로")
-romImageLabel.grid(column=0, row=3, pady=5, padx=5)
+romImageLabel.grid(column=0, row=4, pady=5, padx=5)
 romImageEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romImageEntry.grid(column=1, row=3, pady=5, padx=5)
+romImageEntry.grid(column=1, row=4, pady=5, padx=5)
 
 # 세부 정보
 romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="세부 정보")
-romDescriptionLabel.grid(column=0, row=4, pady=5, padx=5)
+romDescriptionLabel.grid(column=0, row=5, pady=5, padx=5)
 romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=10)
-romDescriptionText.grid(column=1, row=4, pady=5, padx=5)
+romDescriptionText.grid(column=1, row=5, pady=5, padx=5)
 
 # 롬 정보 업데이트 버튼
 def updateRomInfoHandler():
@@ -256,9 +274,10 @@ def updateRomInfoHandler():
     이미지 경로: {}    
     세부 정보: {}'''.format(romTitleEntry.get(), romPathEntry.get(), romRatingEntry.get(), romImageEntry.get(), romDescriptionText.get(1.0, tk.END))
     result = mBox.askquestion("롬 정보 업데이트", "{} 롬 정보를 업데이트 하시겠습니까?".format(romInfo))
-    if result == 'yes':
+    if result == 'yes':        
         game['name'] = romTitleEntry.get()
         game['path'] = romPathEntry.get()
+        game['rating'] = romRatingEntry.get()
         game['image'] = romImageEntry.get()
         game['desc'] = romDescriptionText.get(1.0, tk.END)
         xmlGameList.updateGame(lastRomName, game)
@@ -266,9 +285,7 @@ def updateRomInfoHandler():
         
 
 romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
-romUpdateButton.grid(column=1, row=5, pady=5, padx=5)
-
-# 롬 세부 정보
+romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
 
 # 출력 메시지
 label3 = ttk.Label(outputMessageFrame, text="출력 메시지")
@@ -295,8 +312,8 @@ debugLabel.grid(column=0, row=3, columnspan=2, pady=5, padx=5)
 # buttons                             #
 #######################################
 
-# 폴더 찾기 버튼
-folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(targetDir))
+# 대상 폴더 열기 버튼
+folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(cfg.getTargetPath()))
 folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
@@ -304,16 +321,54 @@ romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=
 romFolderOpenButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
-imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: os.startfile(path.join(romBox.get(),'box')))
+imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: os.startfile(path.join(romBox.get(), "media/images")))
 imgFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
 fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
 
+# 기본 폴더 재설정 버튼
+def setBasePathHandler():
+    '''
+    기본 폴더를 재설정하는 핸들러
+    '''
+    from tkinter import filedialog 
+    subDirs = []
+    while True:   
+        basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
+        os.chdir(basePath)
+        subDirs = readSubDirs()
+        if len(subDirs) != 0: 
+            break
+        mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 다시 선택해 주세요.")        
+    
+    cfg.setBasePath(basePath)
+    cfg.setLastRomDir(subDirs[0])
+    cfg.save()
+    romBox['values'] = subDirs
+    romBox.set(cfg.getLastRomDir())
+    romBox.event_generate("<<ComboboxSelected>>")
+
+setBasePathButton = ttk.Button(buttonFrame, text="기본 폴더 재설정", command=setBasePathHandler)
+setBasePathButton.grid(column=0, row=4, pady=5, padx=5)
+
+# 타겟 폴더 재설정 버튼
+def setTargetPathHandler():
+    '''
+    타겟 폴더를 재설정하는 핸들러
+    '''
+    from tkinter import filedialog    
+    targetPath = filedialog.askdirectory(initialdir=cfg.getTargetPath())    
+    cfg.setTargetPath(targetPath)
+    cfg.save()
+
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
 if  cfg.getLastRomDir() in romBox['values']:
     romBox.set(cfg.getLastRomDir())
+else:
+    romBox.set(romBox['values'][0])
+
 romBox.event_generate("<<ComboboxSelected>>")
 
 # 애플리케이션을 실행합니다.

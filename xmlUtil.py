@@ -16,10 +16,16 @@ class XmlGameList:
         '''
         Constructor: XML 파일을 읽어서 gameList를 생성한다.
         subRomDir: 서브 롬 디렉토리
+        만약 XML 파일이 없으면 gameList를 생성하지 않는다.
         '''
         self.subRomDir = subRomDir
         self.xmlPath = path.join(subRomDir, cfg.getXmlName())
-        self.load(subRomDir)    
+        self.tree = None
+        self.gameList = None
+        self.gameNodes = None
+
+        if path.isfile(self.xmlPath):
+            self.load(subRomDir)
         
     def load(self, subRomDir):
         '''

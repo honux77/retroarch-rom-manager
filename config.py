@@ -6,20 +6,10 @@ class Config:
     '''
     환경 설정을 담당하는 클래스
     환결 설정은 config.json 파일에 저장된다.
-
-    config.json 파일의 예시는 다음과 같다.
-    {    
-    "basePath": "d:\\Retropie\\roms\\",    
-    "targetPath": "f:\\",    
-    "extension": ["zip", "chd", "dsk"],
-    "xmlName" : "gamelist.xml",    
-    "baseImageName": "base.png",
-    "iconFileName": "icon16.png",
-    "lastSubRomDirectory": "gba"
-    }
     '''
 
-    def __init__(self):        
+    def __init__(self):
+        # setup 윈도우에서 저장하기를 누를 때 기본 폴더가 변경되어 발생하는 오류를 막기위해 현재 폴더를 기본 폴더로 설정한다.
         self.jsonFileName = path.join(os.getcwd(), 'config.json')
         self.load()
 
