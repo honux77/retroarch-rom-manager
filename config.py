@@ -71,4 +71,30 @@ class Config:
         '''
         마지막으로 선택한 rom 경로를 설정한다.
         '''
-        self.configJson['lastSubRomDirectory'] = lastRomDir         
+        self.configJson['lastSubRomDirectory'] = lastRomDir      
+
+    def getRetroarchPath(self):
+        '''
+        retroarch 경로를 반환한다.
+        '''
+        return self.configJson['retroarchPath']   
+    
+    def getCoreLibaryName(self, subRomDir):
+        '''
+        core libary 이름을 반환한다.
+        '''
+        return self.configJson['cores'][subRomDir]
+
+        
+
+# main function for test
+
+if __name__ == "__main__":
+    cfg = Config()
+    print("Base Path: ", cfg.getBasePath())
+    print("Target Path: ", cfg.getTargetPath())
+    print("Extension: ", cfg.getExtension())
+    print("Xml Name: ", cfg.getXmlName())
+    print("Last Rom Dir: ", cfg.getLastRomDir())
+    print("Retroarch Path: ", cfg.getRetroarchPath())
+    print("Core Libary Name: ", cfg.getCoreLibaryName("gb"))

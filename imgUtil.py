@@ -3,8 +3,8 @@ from os import path
 from PIL import Image, ImageTk
 
 def findImage(romDir, imgPath):      
-    maxWidth = 400
-    maxHeight = 400
+    maxWidth = 380
+    maxHeight = 380
 
     fullPath = path.join(romDir, imgPath)        
     if not path.isfile(fullPath):

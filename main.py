@@ -28,7 +28,7 @@ programPath = os.getcwd()
 # Create instance
 root = tk.Tk()
 root.title("RetroArch Rom Manager")
-root.geometry("1200x900")
+root.geometry("1200x800")
 
 # 현재 디렉토리의 리소스 디렉토리에서 아이콘과 기본 이미지를 읽어온다.
 baseImage = Image.open("./resources/base.png")
@@ -169,9 +169,14 @@ outputMessageFrame.grid(column=0, row=2, pady=5, padx=5)
 imagePreviewFrame = ttk.Frame(root)
 imagePreviewFrame.grid(column=1, row=2, pady=5, padx=5)
 
-# 버튼 프레임
+# 기본 버튼 프레임
 buttonFrame = ttk.Frame(root)
-buttonFrame.grid(column=2, row=1, pady=5, padx=5, rowspan=2)
+buttonFrame.grid(column=2, row=1, pady=5, padx=5)
+
+# 설정 버튼 프레임, 테두리를 그린다.
+settingFrame = ttk.Frame(root)
+settingFrame.grid(column=2, row=2, pady=5, padx=5)
+
 
 # 롬 폴더 선택 프레임
 label = ttk.Label(titleFrame, text="롬 폴더")
@@ -211,7 +216,7 @@ label2 = ttk.Label(romListFrame, text="롬 리스트")
 label2.grid(column=0, row=0, pady=5, padx=5)
 from tkinter import Listbox
 romListBox = Listbox(romListFrame)
-romListBox.config(height=20, width= 60)
+romListBox.config(height=18, width= 60)
 romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
 romListBox.grid(column=0, row=1, padx=5, pady=5)
 
@@ -246,7 +251,7 @@ romImageEntry.grid(column=1, row=4, pady=5, padx=5)
 # 세부 정보
 romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="세부 정보")
 romDescriptionLabel.grid(column=0, row=5, pady=5, padx=5)
-romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=10)
+romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=6)
 romDescriptionText.grid(column=1, row=5, pady=5, padx=5)
 
 # 롬 정보 업데이트 버튼
@@ -285,21 +290,24 @@ label3 = ttk.Label(outputMessageFrame, text="출력 메시지")
 label3.grid(column=0, row=0, pady=5, padx=5)
 # 메시지 출력용 텍스트 박스
 msgTextBox = Text(outputMessageFrame)
-msgTextBox.config(height=30, width= 60)
+msgTextBox.config(height=20, width= 60)
 msgTextBox.grid(column=0, row=1, padx=5, pady=5)
 
 
-# 이미지 미리보기
-label4 = ttk.Label(imagePreviewFrame, text="이미지 미리 보기")
-label4.grid(column=0, row=0, pady=5, padx=5)
-
-# 포토 이미지 라벨
+# 이미지 미리보기 라벨
 imgLabel = ttk.Label(imagePreviewFrame, image=baseImageTk)
 imgLabel.grid(column=0, row=1, pady=5, padx=5)
 
 #######################################
 # buttons                             #
 #######################################
+
+# 선택 롬 실행 버튼
+import mainFunc
+runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", 
+                          command=lambda: mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(lastRomName)['path'],cfg))
+
+runRomButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 기기 폴더 열기 버튼
 
@@ -313,19 +321,20 @@ def openFolderHandler(folderPath):
         mBox.showerror("폴더 없음", folderPath + " 가 없습니다. 폴더를 확인해 주세요.")
 
 folderSelectButton = ttk.Button(buttonFrame, text="기기 폴더 열기", command=lambda: openFolderHandler(cfg.getTargetPath()))
-folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
+folderSelectButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
 romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: openFolderHandler(subRomDirBox.get()))
-romFolderOpenButton.grid(column=0, row=1, pady=5, padx=5)
+romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
 imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(xmlGameList.getBestMatchedImagePath()))
-imgFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
+imgFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
-fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
+fileDeleteButton.grid(column=0, row=4, pady=5, padx=5)
+
 
 
 def setBasePath():
@@ -359,8 +368,8 @@ def setBasePathHandler():
     subRomDirBox.set(cfg.getLastRomDir())
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
-setBasePathButton = ttk.Button(buttonFrame, text="기본 폴더 재설정", command=setBasePathHandler)
-setBasePathButton.grid(column=0, row=4, pady=5, padx=5)
+setBasePathButton = ttk.Button(settingFrame, text="기본 폴더 재설정", command=setBasePathHandler)
+setBasePathButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 타겟 폴더 재설정 버튼
 def setTargetPathHandler():
@@ -371,6 +380,9 @@ def setTargetPathHandler():
     targetPath = filedialog.askdirectory(initialdir=cfg.getTargetPath())    
     cfg.setTargetPath(targetPath)
     cfg.save()
+
+setTargetPathButton = ttk.Button(settingFrame, text="타겟 폴더 재설정", command=setTargetPathHandler)
+setTargetPathButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
 if  cfg.getLastRomDir() in subRomDirBox['values']:
