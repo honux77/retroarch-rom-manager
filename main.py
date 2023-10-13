@@ -380,6 +380,15 @@ else:
 
 subRomDirBox.event_generate("<<ComboboxSelected>>")
 
+# 종료시 설정을 저장한다.
+def onClosing():
+    print("메인 프로그램 종료")
+    cfg.setLastRomDir(subRomDirBox.get())
+    cfg.save()
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", onClosing)
+
 # 애플리케이션을 실행합니다.
 root.wm_iconphoto(False, photo)
 root.mainloop()
