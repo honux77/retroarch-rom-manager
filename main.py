@@ -302,21 +302,20 @@ imgLabel.grid(column=0, row=1, pady=5, padx=5)
 
 # 기기 폴더 열기 버튼
 
-def openDeviceFolderHandler():
+def openFolderHandler(folderPath):
     '''
     기기 폴더를 열어주는 핸들러
     '''
-    targetPath = cfg.getTargetPath()
-    if path.exists(targetPath) and path.isdir(targetPath):
-        os.startfile(targetPath)
+    if path.exists(folderPath) and path.isdir(folderPath):
+        os.startfile(folderPath)
     else:
-        mBox.showerror("기기 폴더 없음", cfg.getTargetPath() + " 가 없습니다. 폴더를 확인해 주세요.")
+        mBox.showerror("폴더 없음", folderPath + " 가 없습니다. 폴더를 확인해 주세요.")
 
-folderSelectButton = ttk.Button(buttonFrame, text="기기 폴더 열기", command=openDeviceFolderHandler)
+folderSelectButton = ttk.Button(buttonFrame, text="기기 폴더 열기", command=lambda: openFolderHandler(cfg.getTargetPath())
 folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
-romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: os.startfile(romBox.get()))
+romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: openFolderHandler(romBox.get()))
 romFolderOpenButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
