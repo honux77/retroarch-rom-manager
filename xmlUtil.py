@@ -63,9 +63,6 @@ class XmlGameList:
                 maxImagePath = imagePath
         return path.join(self.subRomDir, maxImagePath)
 
-        
-
-
     def _createImagePath(gameNode):
         '''
         image path가 없는 경우 추가
@@ -100,7 +97,8 @@ class XmlGameList:
 
     def _addGameInSubRomDirectory(self):
         '''
-        서브 롬 디렉토리의 파일들을 읽고 gameList에 추가한다.
+        리스트에 누락된 파일들을 추가
+        서브 롬 디렉토리의 파일들을 읽어 gameList에 추가한다.
         파일들의 확장자는 config에서 설정한 확장자와 일치하는 파일만 추가한다.
         '''
         
@@ -124,6 +122,15 @@ class XmlGameList:
                 append = True        
         return append
         
+    def _removeAllSubElements(self, element, pName):
+        '''
+        element의 모든 서브 엘리먼트를 제거한다.
+        <desc /> 속성으로 버그가 발생해서 해결하기 위해 작성
+        TODO: 더 좋은 방법은 없는지 찾아보자.
+        '''
+        for subElement in element.findall(pName):
+            element.remove(subElement)
+    
     def _load(self):
         '''
         XML 파일을 읽어서 gameList를 생성한다.        
@@ -135,13 +142,17 @@ class XmlGameList:
         for gameNode in self.gameNodes:  
             # image path가 없는 경우 추가
             if gameNode.find('image') is None:
-                self._createImagePath(gameNode)                
+                self._createImagePath(gameNode)      
+
+                print("Image 경로 추가: {} {}".format(gameNode.find('name').text, gameNode.find('image').text))          
                 update = True
 
             # image 경로가 ./ 로 시작하지 않으면 ./를 추가한다.
             if gameNode.find('image').text[:2] != './':
                 gameNode.find('image').text = './' + gameNode.find('image').text
                 gameNode.find('image').tail = '\n\t\t'
+
+                print("Image 경로 수정: {} {}".format(gameNode.find('name').text, gameNode.find('image').text))
                 update = True
             
             # rating이 없는 경우 추가
@@ -149,13 +160,18 @@ class XmlGameList:
                 rating = ET.SubElement(gameNode, 'rating')
                 rating.text = '0.6'
                 rating.tail = '\n\t\t'
+
+                print("Rating 추가: {} {}".format(gameNode.find('name').text, gameNode.find('rating').text))
                 update = True
 
             # description이 없는 경우 추가
-            if gameNode.find('desc') is None:
+            if gameNode.find('desc') is None or gameNode.find('desc').text is None:                
+                self._removeAllSubElements(gameNode, 'desc')
                 desc = ET.SubElement(gameNode, 'desc')
                 desc.text = '{}의 설명입니다.'.format(gameNode.find('name').text)
                 desc.tail = '\n\t\t'
+
+                print("Description 추가: {} {}".format(gameNode.find('name').text, gameNode.find('desc').text))
                 update = True
 
             self.gameList.append(
