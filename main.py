@@ -84,14 +84,6 @@ def subRomBoxHandler(event):
         lastRomIdx = romListBox.size() - 1
     romListBox.select_set(lastRomIdx)
     romListBox.event_generate("<<ListboxSelect>>")
-    
-
-def debug(msg):
-    '''
-    디버그 메시지를 디버깅용 라벨에 출력한다.
-    msg: 출력할 메시지
-    '''
-    debugLabel.configure(text=msg)
 
 def romListBoxSelectHandler(event):
     '''
@@ -304,16 +296,23 @@ label4.grid(column=0, row=0, pady=5, padx=5)
 imgLabel = ttk.Label(imagePreviewFrame, image=baseImageTk)
 imgLabel.grid(column=0, row=1, pady=5, padx=5)
 
-# debug label
-debugLabel = ttk.Label(root, text="debug")
-debugLabel.grid(column=0, row=3, columnspan=2, pady=5, padx=5)
-
 #######################################
 # buttons                             #
 #######################################
 
-# 대상 폴더 열기 버튼
-folderSelectButton = ttk.Button(buttonFrame, text="대상 폴더 열기", command=lambda: os.startfile(cfg.getTargetPath()))
+# 기기 폴더 열기 버튼
+
+def openDeviceFolderHandler():
+    '''
+    기기 폴더를 열어주는 핸들러
+    '''
+    targetPath = cfg.getTargetPath()
+    if path.exists(targetPath) and path.isdir(targetPath):
+        os.startfile(targetPath)
+    else:
+        mBox.showerror("기기 폴더 없음", cfg.getTargetPath() + " 가 없습니다. 폴더를 확인해 주세요.")
+
+folderSelectButton = ttk.Button(buttonFrame, text="기기 폴더 열기", command=openDeviceFolderHandler)
 folderSelectButton.grid(column=0, row=0, pady=5, padx=5)
 
 # 롬 폴더 열기 버튼
@@ -328,12 +327,14 @@ imgFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
 fileDeleteButton.grid(column=0, row=3, pady=5, padx=5)
 
-# 기본 폴더 재설정 버튼
-def setBasePathHandler():
+
+def setBasePath():
     '''
-    기본 폴더를 재설정하는 핸들러
+    파일 다이얼로그를 열어기본 폴더를 설정한다.
+    기본 폴더는 서브 롬 폴더가 있어야 하며 잘못 선택할 경우 다시 선택하도록 한다.
     '''
-    from tkinter import filedialog 
+    from tkinter import filedialog
+
     subDirs = []
     while True:   
         basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
@@ -341,11 +342,19 @@ def setBasePathHandler():
         subDirs = readSubDirs()
         if len(subDirs) != 0: 
             break
-        mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 다시 선택해 주세요.")        
+        mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 다시 선택해 주세요.")   
     
     cfg.setBasePath(basePath)
     cfg.setLastRomDir(subDirs[0])
     cfg.save()
+    return subDirs
+
+# 기본 폴더 재설정 버튼
+def setBasePathHandler():
+    '''
+    기본 폴더를 재설정하는 핸들러
+    '''
+    subDirs = setBasePath()        
     romBox['values'] = subDirs
     romBox.set(cfg.getLastRomDir())
     romBox.event_generate("<<ComboboxSelected>>")
