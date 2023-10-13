@@ -41,6 +41,31 @@ class XmlGameList:
         '''
         self.tree.write(self.xmlPath, 'UTF-8')
 
+    def getBestMatchedImagePath(self):
+        '''
+        전체 게임의 이미지 경로 중 가장 많은 파일을 포함한 경로를 반환
+        '''
+        # image 속성 에서 디렉토리만 분리하고 빈도수를 센다.
+        imagePaths = [path.dirname(game['image']) for game in self.gameList]
+        imagePathCount = {}
+        for imagePath in imagePaths:
+            if imagePath in imagePathCount:
+                imagePathCount[imagePath] += 1
+            else:
+                imagePathCount[imagePath] = 1
+
+        # 가장 많은 빈도수를 가진 image 경로를 반환한다.
+        maxCount = 0
+        maxImagePath = None
+        for imagePath, count in imagePathCount.items():
+            if count > maxCount:
+                maxCount = count
+                maxImagePath = imagePath
+        return path.join(self.subRomDir, maxImagePath)
+
+        
+
+
     def _createImagePath(gameNode):
         '''
         image path가 없는 경우 추가
