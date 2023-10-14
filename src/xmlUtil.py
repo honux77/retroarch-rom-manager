@@ -197,12 +197,14 @@ class XmlGameList:
         append = self._addGameInSubRomDirectory()
 
         # sort by name
-        self.gameList.sort(key=lambda x: x['name'])
+        self.gameList.sort(key=lambda x: (1, x['name']) if x['name'].isascii() else (0, x['name']))
 
         # update XML file
         if update or append:
             print("Update XML file: ", self.xmlPath)
             self.tree.write(self.xmlPath, 'UTF-8')
+
+        
     
     def findGame(self, name):
         '''find game from gameList'''
