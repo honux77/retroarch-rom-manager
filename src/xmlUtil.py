@@ -139,7 +139,16 @@ class XmlGameList:
         self.gameNodes = self.tree.getroot()
         self.gameList = []
         update = False
-        for gameNode in self.gameNodes:  
+        for gameNode in self.gameNodes:
+
+            #path가 ./로 시작하지 않는 경우 ./ 추가
+            if gameNode.find('path').text[:2] != './':
+                gameNode.find('path').text = './' + gameNode.find('path').text
+                gameNode.find('path').tail = '\n\t\t'
+
+                print("Path 경로 수정: {} {}".format(gameNode.find('name').text, gameNode.find('path').text))
+                update = True
+
             # image path가 없는 경우 추가
             if gameNode.find('image') is None:
                 self._createImagePath(gameNode)      

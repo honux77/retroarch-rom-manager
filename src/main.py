@@ -304,8 +304,9 @@ imgLabel.grid(column=0, row=1, pady=5, padx=5)
 
 # 선택 롬 실행 버튼
 import mainFunc
+import asyncio
 runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", 
-                          command=lambda: mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(lastRomName)['path'],cfg))
+                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(lastRomName)['path'],cfg)))
 
 runRomButton.grid(column=0, row=0, pady=5, padx=5)
 

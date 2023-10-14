@@ -66,11 +66,15 @@ def deleteRomAndImages(subPath, romPath, imggePath):
     
     rom = path.join(subPath, romPath)    
     img = path.join(subPath, imggePath)
-    os.remove(rom)
+    try:
+        os.remove(rom)
+    except:
+        msg += "롬 삭제 실패"
     try:
         os.remove(img)    
     except:
-        return "이미지 삭제 실패"
+        msg += "이미지 삭제 실패"
+        return msg
     return romPath + " 삭제 성공"
 
 # main function for test

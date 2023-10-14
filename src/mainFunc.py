@@ -4,9 +4,14 @@ import os
 
 def runRetroarch(subRomDir, romPath, cfg):
     from os import path
-    fullCmd = '{} -L {} "{}"'.format(cfg.getRetroarchPath(), cfg.getCoreLibaryName(subRomDir), path.join(subRomDir,romPath))
-    print("에뮬레이터를 실행합니다: ", fullCmd)
-    os.system(fullCmd)
+    import subprocess
+    cmd = [cfg.getRetroarchPath(), '-L', cfg.getCoreLibaryName(subRomDir), path.join(subRomDir,romPath)]        
+    print("에뮬레이터를 실행합니다: ", cmd)
+    subprocess.Popen(cmd)
+
+            
+    
+    
 
 
 # test
