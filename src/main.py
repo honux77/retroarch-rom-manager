@@ -393,6 +393,10 @@ else:
 
 subRomDirBox.event_generate("<<ComboboxSelected>>")
 
+# 설정 파일 열기 버튼
+openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", command=lambda: os.startfile(cfg.getConfigFilePath()))
+openConfigButton.grid(column=0, row=2, pady=5, padx=5)
+
 # 종료시 설정을 저장한다.
 def onClosing():
     print("메인 프로그램 종료")

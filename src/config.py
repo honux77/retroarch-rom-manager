@@ -23,7 +23,7 @@ class Config:
         '''
         환경 설정 파일을 저장한다.
         '''
-        json.dump(self.configJson, open(self.jsonFileName, 'w+'))
+        json.dump(self.configJson, open(self.jsonFileName, 'w+'), indent=4)
     
     def getBasePath(self):
         '''
@@ -98,3 +98,4 @@ if __name__ == "__main__":
     print("Last Rom Dir: ", cfg.getLastRomDir())
     print("Retroarch Path: ", cfg.getRetroarchPath())
     print("Core Libary Name: ", cfg.getCoreLibaryName("gb"))
+    cfg.save()

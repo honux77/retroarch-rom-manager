@@ -2,7 +2,7 @@
 # 각 함수들은 main.py에서 호출되어 사용됩니다.
 import os
 
-def runRetroarch(subRomDir, romPath, cfg):
+async def runRetroarch(subRomDir, romPath, cfg):
     from os import path
     import subprocess
     cmd = [cfg.getRetroarchPath(), '-L', cfg.getCoreLibaryName(subRomDir), path.join(subRomDir,romPath)]        
