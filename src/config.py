@@ -24,6 +24,12 @@ class Config:
         환경 설정 파일을 저장한다.
         '''
         json.dump(self.configJson, open(self.jsonFileName, 'w+'), indent=4)
+
+    def getConfigFilePath(self):
+        '''
+        환경 설정 파일의 경로를 반환한다.
+        '''
+        return self.jsonFileName;
     
     def getBasePath(self):
         '''

@@ -9,11 +9,6 @@ async def runRetroarch(subRomDir, romPath, cfg):
     print("에뮬레이터를 실행합니다: ", cmd)
     subprocess.Popen(cmd)
 
-            
-    
-    
-
-
 # test
 
 if __name__ == "__main__":
