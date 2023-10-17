@@ -60,6 +60,13 @@ class Config:
         확장자를 반환한다.
         '''
         return self.configJson['extension']   
+    
+
+    def getScrapperXmlName(self):
+        '''
+        스크래퍼에서 생성된 xml 파일명을 반환한다.
+        '''
+        return self.configJson['scrapperXmlName']
 
     def getXmlName(self):
         '''
@@ -101,6 +108,7 @@ if __name__ == "__main__":
     print("Target Path: ", cfg.getTargetPath())
     print("Extension: ", cfg.getExtension())
     print("Xml Name: ", cfg.getXmlName())
+    print("Scrapper Xml Name: ", cfg.getScrapperXmlName())
     print("Last Rom Dir: ", cfg.getLastRomDir())
     print("Retroarch Path: ", cfg.getRetroarchPath())
     print("Core Libary Name: ", cfg.getCoreLibaryName("gb"))

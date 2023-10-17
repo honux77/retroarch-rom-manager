@@ -8,6 +8,7 @@
         "fds"
     ],
     "xmlName": "gamelist.xml",
+    "scrapperXmlName": "game.xml",
     "lastSubRomDirectory": "fbneo",
     "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
     "cores": {

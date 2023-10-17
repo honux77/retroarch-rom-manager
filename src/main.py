@@ -402,6 +402,22 @@ openConfigButton.grid(column=0, row=2, pady=5, padx=5)
 retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(cfg.getRetroarchPath())))
 retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
+# ScrapXML 삭제 버튼
+def deleteFile(filePath):
+    # yn 다이얼로그를 열고 한 번 더 물어본다.
+    result = mBox.askquestion("ScrapXML 삭제", f"ScrapXML 파일 {filePath}을 삭제하시겠습니까?")    
+    if not result:
+        mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일을 삭제를 취소합니다.")
+    if path.isfile(filePath):
+        os.remove(filePath)
+        mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일을 삭제했습니다.")
+    else:
+        mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일이 없습니다.")
+
+scraperXmlDeleteButton = ttk.Button(settingFrame, text="ScrapXML 삭제", 
+                                    command=lambda: deleteFile(path.join(subRomDirBox.get(), cfg.getScrapperXmlName())))
+scraperXmlDeleteButton.grid(column=0, row=4, pady=5, padx=5)
+
 # 종료시 설정을 저장한다.
 def onClosing():
     print("메인 프로그램 종료")

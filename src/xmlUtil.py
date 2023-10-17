@@ -44,6 +44,7 @@ class XmlGameList:
         self.subRomDir = subRomDir
         print("Load XML file: ", self.xmlPath)
         self._load()
+        self._updateFromScrapper()
 
     def save(self):
         '''
@@ -131,6 +132,47 @@ class XmlGameList:
                 self.__addNodeInGameNodes(game)
                 append = True        
         return append
+    
+    def _importFromSkraperXmlFile(self):        
+        skraperXmlPath = path.join(self.subRomDir, cfg.getScrapperXmlName())
+        if not path.isfile(skraperXmlPath):
+            print("Skraper XML 파일이 없습니다. ", skraperXmlPath)
+            self.scrapGames = None
+            return 0
+        
+        skraperTree = ET.parse(skraperXmlPath)
+        skraperRoot = skraperTree.getroot()
+        gameNodes = skraperRoot.findall('game')
+        self.scrapGames = {}
+        for game in gameNodes:
+            gname = game.attrib['name']
+            gpath = "./" + game.find('rom').attrib['name']
+            desc = game.find('description').text if game.find('description') is not None else f'Description of {gname}'
+            print(f"Import game: {gname} {gpath}")
+            self.scrapGames[gpath] = {
+                'name': gname,
+                'path': gpath,
+                'desc': desc
+            }
+        print("Skraper XML 파일 {}에서 {} 개의 게임정보를 읽었습니다. ".format(skraperXmlPath, len(self.scrapGames)))
+        return len(self.scrapGames)
+    
+    def _updateFromScrapper(self):
+        self._importFromSkraperXmlFile()
+        if self.scrapGames is None:
+            return
+        for game in self.gameList:
+            oldName = game['name']
+            if game['path'] in self.scrapGames:
+                
+                # 한글 이름이 아닌 경우만 업데이트한다.
+                if game['name'].isascii():
+                    game['name'] = self.scrapGames[game['path']]['name']
+                
+                game['desc'] = self.scrapGames[game['path']]['desc']
+                print("Update game: ", game['path'], end=' ')
+                print(self.updateGame(oldName, game, dryRun=True))
+        self.save()
         
     def _removeAllSubElements(self, element, pName):
         '''
@@ -248,9 +290,7 @@ class XmlGameList:
         '''
         롬 이름을 받아서 해당 롬 정보를 업데이트한다.
         '''      
-        # xml 엘리먼트만 업데이트한다.
-        # 마지막에 load를 호출하므로 전체 정보도 갱신이 된다.
-        # 느려질 것 같긴 한데 일단 돌아가니 그냥 이렇게 두자.
+        # xml 엘리먼트만 업데이트한다.                
         gameNode = self._findGameNode(oldRomName)
         if gameNode is None:
             return False
@@ -263,6 +303,7 @@ class XmlGameList:
         if not dryRun:
             self.tree.write(self.xmlPath, 'UTF-8')
             self.load(self.subRomDir)
+        return True
     
     def remove(self, romName, dryRun=False):
         '''
