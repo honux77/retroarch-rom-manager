@@ -26,6 +26,15 @@ class XmlGameList:
 
         if path.isfile(self.xmlPath):
             self.load(subRomDir)
+        else:
+            print("XML 파일이 없습니다. ", self.xmlPath)
+            print("새로운 XML 파일을 생성합니다.")
+            self.tree = ET.ElementTree(ET.Element('gameList'))
+            self.gameNodes = self.tree.getroot()
+            self.gameList = []
+            self._addGameInSubRomDirectory()
+            self.tree.write(self.xmlPath, 'UTF-8')
+            self.load(subRomDir)
         
     def load(self, subRomDir):
         '''
@@ -33,6 +42,7 @@ class XmlGameList:
         subRomDir: 서브 롬 디렉토리
         '''
         self.subRomDir = subRomDir
+        print("Load XML file: ", self.xmlPath)
         self._load()
 
     def save(self):
@@ -103,7 +113,7 @@ class XmlGameList:
         '''
         
         romFiles = [f for f in os.listdir(self.subRomDir) if path.isfile(path.join(self.subRomDir, f)) and path.splitext(f)[1][1:] in cfg.getExtension()]
-        listFiles = [f['path'][2:] for f in self.gameList]
+        listFiles = [f['path'][2:] for f in self.gameList]        
         append = False
 
         for romFile in romFiles:
@@ -136,6 +146,7 @@ class XmlGameList:
         XML 파일을 읽어서 gameList를 생성한다.        
         '''        
         self.tree = ET.parse(self.xmlPath)
+
         self.gameNodes = self.tree.getroot()
         self.gameList = []
         update = False

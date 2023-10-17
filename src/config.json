@@ -4,10 +4,11 @@
     "extension": [
         "zip",
         "chd",
-        "dsk"
+        "dsk",
+        "fds"
     ],
     "xmlName": "gamelist.xml",
-    "lastSubRomDirectory": "snes",
+    "lastSubRomDirectory": "fbneo",
     "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
     "cores": {
         "gb": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
@@ -16,6 +17,7 @@
         "snes": "C:\\RetroArch-Win64\\cores\\mednafen_supafaust_libretro.dll",
         "wswan": "C:\\RetroArch-Win64\\cores\\swanstation_libretro.dll",
         "msx1": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
-        "msx2": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll"
+        "msx2": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
+        "fbneo": "C:\\RetroArch-Win64\\cores\\fbneo_libretro.dll"
     }
 }
