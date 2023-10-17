@@ -397,6 +397,11 @@ subRomDirBox.event_generate("<<ComboboxSelected>>")
 openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", command=lambda: os.startfile(cfg.getConfigFilePath()))
 openConfigButton.grid(column=0, row=2, pady=5, padx=5)
 
+# RetroArch 폴더 열기 버튼
+# 전체 경로에서 retroarch 폴더만 가져와서 열어준다.
+retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(cfg.getRetroarchPath())))
+retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
+
 # 종료시 설정을 저장한다.
 def onClosing():
     print("메인 프로그램 종료")
