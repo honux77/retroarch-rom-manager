@@ -9,7 +9,7 @@
     ],
     "xmlName": "gamelist.xml",
     "scrapperXmlName": "game.xml",
-    "lastSubRomDirectory": "fbneo",
+    "lastSubRomDirectory": "snes",
     "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
     "cores": {
         "gb": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
