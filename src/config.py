@@ -12,6 +12,7 @@ class Config:
         # setup 윈도우에서 저장하기를 누를 때 기본 폴더가 변경되어 발생하는 오류를 막기위해 현재 폴더를 기본 폴더로 설정한다.
         self.jsonFileName = path.join(os.getcwd(), 'config.json')
         self.load()
+        self.loadSecretIni()
 
     def load(self):
         '''
@@ -97,6 +98,30 @@ class Config:
         core libary 이름을 반환한다.
         '''
         return self.configJson['cores'][subRomDir]
+    
+    def getScrapperPath(self):
+        '''
+        스크래퍼 경로를 반환한다.
+        '''
+        return self.configJson['scrapperPath']
+    
+    def loadSecretIni(self):
+        '''ini 파일에서 secret 정보를 읽어온다.'''
+        import configparser
+        self.secret = configparser.ConfigParser()
+        if path.exists('secret.ini'):
+            self.secret.read('secret.ini')
+        else:
+            self.secret = None
+    
+    def getDeepLApiKey(self):
+        '''
+        DeepL API Key를 반환한다.
+        '''
+        if self.secret == None:
+            return None
+        return self.secret['DEFAULT']['DeepLApiKey']
+        
 
         
 

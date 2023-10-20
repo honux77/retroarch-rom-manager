@@ -402,6 +402,11 @@ openConfigButton.grid(column=0, row=2, pady=5, padx=5)
 retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(cfg.getRetroarchPath())))
 retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
+# Scrapper 실행 버튼
+runScrapperButton = ttk.Button(settingFrame, text="Scrapper 실행", command=lambda: asyncio.run(mainFunc.runScrapper(cfg)))
+runScrapperButton.grid(column=0, row=4, pady=5, padx=5)
+
+
 # ScrapXML 삭제 버튼
 def deleteFile(filePath):
     # yn 다이얼로그를 열고 한 번 더 물어본다.
@@ -416,7 +421,7 @@ def deleteFile(filePath):
 
 scraperXmlDeleteButton = ttk.Button(settingFrame, text="ScrapXML 삭제", 
                                     command=lambda: deleteFile(path.join(subRomDirBox.get(), cfg.getScrapperXmlName())))
-scraperXmlDeleteButton.grid(column=0, row=4, pady=5, padx=5)
+scraperXmlDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 
 # 종료시 설정을 저장한다.
 def onClosing():
