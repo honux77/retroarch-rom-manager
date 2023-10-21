@@ -42,7 +42,6 @@ class XmlGameList:
         subRomDir: 서브 롬 디렉토리
         '''
         self.subRomDir = subRomDir
-        print("Load XML file: ", self.xmlPath)
         self._load()
         self._updateFromScrapper()
 
@@ -147,8 +146,7 @@ class XmlGameList:
         for game in gameNodes:
             gname = game.attrib['name']
             gpath = "./" + game.find('rom').attrib['name']
-            desc = game.find('description').text if game.find('description') is not None else f'Description of {gname}'
-            print(f"Import game: {gname} {gpath}")
+            desc = game.find('description').text if game.find('description') is not None else f'Description of {gname}'            
             self.scrapGames[gpath] = {
                 'name': gname,
                 'path': gpath,
@@ -167,14 +165,17 @@ class XmlGameList:
             update = False
             if game['path'] in self.scrapGames:
                 
-                # 한글 이름이 아닌 경우만 업데이트한다.
-                if game['name'].isascii():
+                # 한글 이름이 아니고 다른 내용이 있을 경우 업데이트한다.
+                if game['name'].isascii() and game['name'] != self.scrapGames[game['path']]['name']:
+                    print("Update game name: ", game['path'], game['name'], self.scrapGames[game['path']]['name'])
                     game['name'] = self.scrapGames[game['path']]['name']
                     update = True
                 
-                # 설명이 한글이 아닐 경우만 업데이트한다.
-                if game['desc'].isascii():                
-                    game['desc'] = self.scrapGames[game['path']]['desc']
+                # 설명이 한글이 아니고 변경사항이 있을 경우만 업데이트한다.
+                if game['desc'].isascii() and game['desc'][:20] != self.scrapGames[game['path']]['desc'][:20]:
+                    print("Update game desc before: ", game['path'], game['desc'])
+                    print("Update game desc after: ", game['path'], self.scrapGames[game['path']]['desc'])
+                    game['desc'] = self.scrapGames[game['path']]['desc'].strip()
                     update = True
                 
                 if update:
@@ -270,6 +271,8 @@ class XmlGameList:
         if update or append:
             print("Update XML file: ", self.xmlPath)
             self.tree.write(self.xmlPath, 'UTF-8')
+        
+        print(f"게임 리스트 XML 파일 {self.xmlPath}에서 {len(self.gameList)} 개의 게임정보를 읽었습니다. ")
 
         
     
