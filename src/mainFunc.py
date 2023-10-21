@@ -3,6 +3,7 @@
 import os
 
 async def runRetroarch(subRomDir, romPath, cfg):
+    '''Retroarch를 실행합니다.'''
     from os import path
     import subprocess
     cmd = [cfg.getRetroarchPath(), '-L', cfg.getCoreLibaryName(subRomDir), path.join(subRomDir,romPath)]        
@@ -11,6 +12,7 @@ async def runRetroarch(subRomDir, romPath, cfg):
 
 
 async def runScrapper(cfg):
+    '''스크래퍼를 실행합니다.'''
     from os import path
     import subprocess
     cmd = [cfg.getScrapperPath()]

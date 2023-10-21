@@ -12,9 +12,12 @@ from tkinter import simpledialog
 from PIL import ImageTk, Image
 
 # local module
+# TODO: from을 사용하지 않도록 수정하자. 유지보수 측면에서 유리하다.
 from config import *
 from xmlUtil import *
 from fileUtil import *
+
+import translate
 
 # load config
 cfg = Config()
@@ -228,31 +231,31 @@ romDescriptionLabel.grid(column=0, row=0, pady=5, padx=5)
 romTitleLabel = ttk.Label(detailedRomInfoFrame, text="롬 이름")
 romTitleLabel.grid(column=0, row=1, pady=5, padx=5)
 romTitleEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romTitleEntry.grid(column=1, row=1, pady=5, padx=5) 
+romTitleEntry.grid(column=1, row=1, pady=5, padx=5, columnspan= 2) 
 
 # 롬 경로
 romPathLabel = ttk.Label(detailedRomInfoFrame, text="롬 경로")
 romPathLabel.grid(column=0, row=2, pady=5, padx=5)
 romPathEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romPathEntry.grid(column=1, row=2, pady=5, padx=5)
+romPathEntry.grid(column=1, row=2, pady=5, padx=5, columnspan= 2)
 
 # Rating
 romRatingLabel = ttk.Label(detailedRomInfoFrame, text="Rating")
 romRatingLabel.grid(column=0, row=3, pady=5, padx=5)
 romRatingEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romRatingEntry.grid(column=1, row=3, pady=5, padx=5)
+romRatingEntry.grid(column=1, row=3, pady=5, padx=5, columnspan= 2)
 
 # 이미지 경로
 romImageLabel = ttk.Label(detailedRomInfoFrame, text="이미지 경로")
 romImageLabel.grid(column=0, row=4, pady=5, padx=5)
 romImageEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romImageEntry.grid(column=1, row=4, pady=5, padx=5)
+romImageEntry.grid(column=1, row=4, pady=5, padx=5, columnspan= 2)
 
 # 세부 정보
 romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="세부 정보")
 romDescriptionLabel.grid(column=0, row=5, pady=5, padx=5)
 romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=6)
-romDescriptionText.grid(column=1, row=5, pady=5, padx=5)
+romDescriptionText.grid(column=1, row=5, columnspan= 2, pady=5, padx=5)
 
 # 롬 정보 업데이트 버튼
 def updateRomInfoHandler():
@@ -264,6 +267,8 @@ def updateRomInfoHandler():
     # 롬 선택 핸들러 코드를 참고할 것 
     # 롬 정보를 수정하면 롬리스트가 포커스를 잃어버리기 때문에 미리 lastRomName을 저장해 두었다.    
     game = xmlGameList.findGame(lastRomName)
+
+    print(lastRomName)
     
     # 새로운 다이얼로그를 열어 정말 저장 할 건지 물어본다.
     romInfo = '''롬 이름: {}
@@ -280,10 +285,23 @@ def updateRomInfoHandler():
         game['desc'] = romDescriptionText.get(1.0, tk.END)
         xmlGameList.updateGame(lastRomName, game)
         subRomDirBox.event_generate("<<ComboboxSelected>>")
-        
 
 romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
 romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
+
+def translateGameInfoHandler():
+    game = xmlGameList.findGame(lastRomName)
+    translate.translateGameInfo(game, cfg)
+    romTitleEntry.delete(0, tk.END)
+    romTitleEntry.insert(0, game['name'])
+    romDescriptionText.delete(1.0, tk.END)
+    romDescriptionText.insert(1.0, game['desc'])
+    xmlGameList.updateGame(lastRomName, game)
+    subRomDirBox.event_generate("<<ComboboxSelected>>")
+
+translateGameInfoButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 번역하기", command=translateGameInfoHandler)
+translateGameInfoButton.grid(column=2, row=6, pady=5, padx=5)
+
 
 # 출력 메시지
 label3 = ttk.Label(outputMessageFrame, text="출력 메시지")

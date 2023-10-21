@@ -161,18 +161,32 @@ class XmlGameList:
         self._importFromSkraperXmlFile()
         if self.scrapGames is None:
             return
+        updateCount = 0
         for game in self.gameList:
             oldName = game['name']
+            update = False
             if game['path'] in self.scrapGames:
                 
                 # 한글 이름이 아닌 경우만 업데이트한다.
                 if game['name'].isascii():
                     game['name'] = self.scrapGames[game['path']]['name']
+                    update = True
                 
-                game['desc'] = self.scrapGames[game['path']]['desc']
-                print("Update game: ", game['path'], end=' ')
-                print(self.updateGame(oldName, game, dryRun=True))
-        self.save()
+                # 설명이 한글이 아닐 경우만 업데이트한다.
+                if game['desc'].isascii():                
+                    game['desc'] = self.scrapGames[game['path']]['desc']
+                    update = True
+                
+                if update:
+                    updateCount += 1
+                    print("Update game: ", game['path'], end=' ')
+                    print(self.updateGame(oldName, game, dryRun=True))
+        
+        if updateCount > 0:
+            print("Update {} games from skraper xml file".format(updateCount))
+            self.save()
+        else:
+            print("No game updated from skraper xml file")
         
     def _removeAllSubElements(self, element, pName):
         '''
@@ -286,10 +300,12 @@ class XmlGameList:
         '''
         return self.findGame(romName)['image']
     
-    def updateGame(self, oldRomName, newGame, dryRun=False):
+    def updateGame(self, oldRomName, newGame:dict, dryRun=False):
         '''
         롬 이름을 받아서 해당 롬 정보를 업데이트한다.
-        '''      
+        dryRun이 True인 경우 XML 파일을 업데이트하지 않는다.
+        newGame: 업데이트할 롬 정보 딕셔너리
+        '''
         # xml 엘리먼트만 업데이트한다.                
         gameNode = self._findGameNode(oldRomName)
         if gameNode is None:
