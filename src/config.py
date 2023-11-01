@@ -121,6 +121,18 @@ class Config:
         if self.secret == None:
             return None
         return self.secret['DEFAULT']['DeepLApiKey']
+    
+    def getLastRomIndex(self):
+        '''
+        마지막으로 선택한 rom index를 반환한다.
+        '''
+        return self.configJson['lastRomIndex']
+    
+    def setLastRomIndex(self, lastRomIndex):
+        '''
+        마지막으로 선택한 rom index를 설정한다.
+        '''
+        self.configJson['lastRomIndex'] = lastRomIndex
         
 
         

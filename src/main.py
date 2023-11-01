@@ -24,8 +24,7 @@ cfg = Config()
 
 # global variable
 xmlGameList = None
-lastRomFilename = ""
-lastRomIdx = 0
+lastRomIdx = cfg.getLastRomIndex()
 programPath = os.getcwd()
 
 # Create instance
@@ -58,6 +57,7 @@ def subRomDirBoxHandler(event):
     # 롬리스트박스와 메시지 박스를 초기화한다.
     romListBox.delete(0, tk.END)        
     msgTextBox.delete(1.0, tk.END)
+
     
     imgFound = 0
     imgMissCount = 0
@@ -94,13 +94,13 @@ def romListBoxSelectHandler(event):
     event: tkinter의 이벤트 객체
     '''
 
-    global xmlGameList, lastRomIdx, lastRomName
+    global xmlGameList, lastRomIdx
     
     # 포커스를 잃을 경우 에러가 나는 문제 해결을 위한 코드
     if len(romListBox.curselection()) == 0: return
 
     lastRomIdx = romListBox.curselection()[0]
-    lastRomName = romListBox.get(lastRomIdx)
+    cfg.setLastRomIndex(lastRomIdx)    
 
     # 이미지를 미리 보여준다.
     import imgUtil
@@ -186,9 +186,8 @@ label = ttk.Label(titleFrame, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
 # 서브 롬 폴더 콤보 박스
-subDirs = readSubDirs()
 basePath = cfg.getBasePath()
-
+subDirs = readSubDirs()
 
 while len(subDirs) == 0:
     # 서브 롬 폴더가 없을 경우 파일 다이얼로그를 열어서 폴더를 선택하도록 한다.
@@ -201,8 +200,8 @@ while len(subDirs) == 0:
     os.chdir(basePath)
     subDirs = readSubDirs()
 
-# 설정 업데이트
-cfg.setBasePath(basePath)    
+    # 설정 업데이트
+    cfg.setBasePath(basePath)    
 
 subRomDirBox = ttk.Combobox(titleFrame, values=subDirs)
 
@@ -262,14 +261,13 @@ def updateRomInfoHandler():
     '''
     롬 정보를 업데이트하는 핸들러
     '''
-    global xmlGameList, lastRomName
+    global xmlGameList, lastRomIdx
 
     # 롬 선택 핸들러 코드를 참고할 것 
     # 롬 정보를 수정하면 롬리스트가 포커스를 잃어버리기 때문에 미리 lastRomName을 저장해 두었다.    
+    lastRomName = romListBox.get(lastRomIdx)        
     game = xmlGameList.findGame(lastRomName)
 
-    print(lastRomName)
-    
     # 새로운 다이얼로그를 열어 정말 저장 할 건지 물어본다.
     romInfo = '''롬 이름: {}
     롬 경로: {}
@@ -290,6 +288,8 @@ romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트
 romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
 
 def translateGameInfoHandler():
+    global lastRomIdx
+    lastRomName = romListBox.get(lastRomIdx)        
     game = xmlGameList.findGame(lastRomName)
     translate.translateGameInfo(game, cfg)
     romTitleEntry.delete(0, tk.END)
@@ -324,7 +324,7 @@ imgLabel.grid(column=0, row=1, pady=5, padx=5)
 import mainFunc
 import asyncio
 runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", 
-                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(lastRomName)['path'],cfg)))
+                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(romListBox.get(lastRomIdx))['path'],cfg)))
 
 runRomButton.grid(column=0, row=0, pady=5, padx=5)
 
