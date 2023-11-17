@@ -431,6 +431,7 @@ def deleteFile(filePath):
     result = mBox.askquestion("ScrapXML 삭제", f"ScrapXML 파일 {filePath}을 삭제하시겠습니까?")    
     if not result:
         mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일을 삭제를 취소합니다.")
+        return
     if path.isfile(filePath):
         os.remove(filePath)
         mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일을 삭제했습니다.")

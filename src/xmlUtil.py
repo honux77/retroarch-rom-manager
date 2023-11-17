@@ -245,7 +245,7 @@ class XmlGameList:
             if gameNode.find('desc') is None or gameNode.find('desc').text is None:                
                 self._removeAllSubElements(gameNode, 'desc')
                 desc = ET.SubElement(gameNode, 'desc')
-                desc.text = '{}의 설명입니다.'.format(gameNode.find('name').text)
+                desc.text = '{} is very cool game!'.format(gameNode.find('name').text)
                 desc.tail = '\n\t\t'
 
                 print("Description 추가: {} {}".format(gameNode.find('name').text, gameNode.find('desc').text))
