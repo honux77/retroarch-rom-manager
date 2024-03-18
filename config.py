@@ -110,23 +110,8 @@ class Config:
             return None
         return self.secret['DEFAULT']['DeepLApiKey']
     
-    def getLastRomIndex(self):
-        '''
-        마지막으로 선택한 rom index를 반환한다.
-        '''
-        return self.configJson['lastRomIndex']
-    
-    def setLastRomIndex(self, lastRomIndex):
-        '''
-        마지막으로 선택한 rom index를 설정한다.
-        '''
-        self.configJson['lastRomIndex'] = lastRomIndex
-        
-
-        
 
 # main function for test
-
 if __name__ == "__main__":
     cfg = Config()
     print("Base Path: ", cfg.getBasePath())
@@ -134,7 +119,6 @@ if __name__ == "__main__":
     print("Extension: ", cfg.getExtension())
     print("Xml Name: ", cfg.getXmlName())
     print("Scrapper Xml Name: ", cfg.getScrapperXmlName())
-    print("Last Rom Dir: ", cfg.getLastRomDir())
     print("Retroarch Path: ", cfg.getRetroarchPath())
     print("Core Libary Name: ", cfg.getCoreLibaryName("gb"))
     cfg.save()
