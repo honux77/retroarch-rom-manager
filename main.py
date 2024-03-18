@@ -257,7 +257,7 @@ romImageEntry.grid(column=1, row=4, pady=5, padx=5, columnspan= 2)
 # 세부 정보
 romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="세부 정보")
 romDescriptionLabel.grid(column=0, row=5, pady=5, padx=5)
-romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=6)
+romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=10)
 romDescriptionText.grid(column=1, row=5, columnspan= 2, pady=5, padx=5)
 
 # 롬 정보 업데이트 버튼
