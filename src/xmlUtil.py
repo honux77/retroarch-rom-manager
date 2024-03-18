@@ -124,7 +124,7 @@ class XmlGameList:
                     'path': './' + romFile,
                     'image': './media/images/' + path.splitext(romFile)[0] + '.png',
                     'rating': '0.6',
-                    'desc': '{}의 설명입니다.'.format(path.splitext(romFile)[0]),
+                    'desc': '{} is very nice game.'.format(path.splitext(romFile)[0]),
                 }
                 print("Add game: ", game)
                 self.gameList.append(game)

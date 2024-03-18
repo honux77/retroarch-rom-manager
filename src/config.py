@@ -73,19 +73,7 @@ class Config:
         '''
         xml 파일명을 반환한다.
         '''
-        return self.configJson['xmlName']
-    
-    def getLastRomDir(self):
-        '''
-        마지막으로 선택한 rom 경로를 반환한다.
-        '''
-        return self.configJson['lastSubRomDirectory']
-    
-    def setLastRomDir(self, lastRomDir):
-        '''
-        마지막으로 선택한 rom 경로를 설정한다.
-        '''
-        self.configJson['lastSubRomDirectory'] = lastRomDir      
+        return self.configJson['xmlName']    
 
     def getRetroarchPath(self):
         '''

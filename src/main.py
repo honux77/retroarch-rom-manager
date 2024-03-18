@@ -25,6 +25,7 @@ cfg = Config()
 # global variable
 xmlGameList = None
 lastRomIdx = cfg.getLastRomIndex()
+lastRomName = None
 programPath = os.getcwd()
 
 # Create instance
@@ -81,7 +82,7 @@ def subRomDirBoxHandler(event):
     else:           
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
-    # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.
+    # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.    
     global lastRomIdx
     if lastRomIdx >= romListBox.size():
         lastRomIdx = romListBox.size() - 1
@@ -94,13 +95,12 @@ def romListBoxSelectHandler(event):
     event: tkinter의 이벤트 객체
     '''
 
-    global xmlGameList, lastRomIdx
+    global xmlGameList, lastRomIdx, lastRomName
     
     # 포커스를 잃을 경우 에러가 나는 문제 해결을 위한 코드
     if len(romListBox.curselection()) == 0: return
 
-    lastRomIdx = romListBox.curselection()[0]
-    cfg.setLastRomIndex(lastRomIdx)    
+    lastRomIdx = romListBox.curselection()[0]        
 
     # 이미지를 미리 보여준다.
     import imgUtil
@@ -281,8 +281,11 @@ def updateRomInfoHandler():
         game['rating'] = romRatingEntry.get()
         game['image'] = romImageEntry.get()
         game['desc'] = romDescriptionText.get(1.0, tk.END)
-        xmlGameList.updateGame(lastRomName, game)
+        xmlGameList.updateGame(lastRomName, game)        
         subRomDirBox.event_generate("<<ComboboxSelected>>")
+    
+
+
 
 romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
 romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
@@ -390,17 +393,17 @@ def setBasePathHandler():
 setBasePathButton = ttk.Button(settingFrame, text="기본 폴더 재설정", command=setBasePathHandler)
 setBasePathButton.grid(column=0, row=0, pady=5, padx=5)
 
-# 타겟 폴더 재설정 버튼
+# 기기 폴더 재설정 버튼
 def setTargetPathHandler():
     '''
-    타겟 폴더를 재설정하는 핸들러
+    기기 폴더를 재설정하는 핸들러
     '''
     from tkinter import filedialog    
     targetPath = filedialog.askdirectory(initialdir=cfg.getTargetPath())    
     cfg.setTargetPath(targetPath)
     cfg.save()
 
-setTargetPathButton = ttk.Button(settingFrame, text="타겟 폴더 재설정", command=setTargetPathHandler)
+setTargetPathButton = ttk.Button(settingFrame, text="기기 폴더 재설정", command=setTargetPathHandler)
 setTargetPathButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
