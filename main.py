@@ -1,4 +1,4 @@
-# simple gui apllication
+# simple GUI Frontend for RetroArch
 import os
 from os import path
 
@@ -11,20 +11,24 @@ from tkinter import simpledialog
 
 from PIL import ImageTk, Image
 
-# local module
-# TODO: from을 사용하지 않도록 수정하자. 유지보수 측면에서 유리하다.
-from config import *
-from xmlUtil import *
-from fileUtil import *
-
+# deepL translator
 import translate
 
+# local module
+import xmlUtil 
+import fileUtil 
+import config
+import lastStatus
+
 # load config
-cfg = Config()
+cfg = config.Config()
+
+# load lastStatus
+status = lastStatus.LastStatus()
 
 # global variable
 xmlGameList = None
-lastRomIdx = cfg.getLastRomIndex()
+lastRomIdx = status.getLastRomIndex()
 lastRomName = None
 programPath = os.getcwd()
 
@@ -48,17 +52,17 @@ def subRomDirBoxHandler(event):
     이미지가 없을 경우 빨간색으로 표시한다.
     없는 이미지는 가장 유사한 이미지 이름을 찾아서 보여준다.
     '''    
-    global xmlGameList
+    global xmlGameList, mBox
+    
     romDir = subRomDirBox.get()
-    xmlGameList = XmlGameList(romDir)
+    xmlGameList = xmlUtil.XmlGameList(romDir)
     if xmlGameList.tree == None:
-        mBox.showerror("XML 파일 없음", "XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
+        mBox.showerror("XML 파일 없음", f"{romDir}에 XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
         return
     
     # 롬리스트박스와 메시지 박스를 초기화한다.
     romListBox.delete(0, tk.END)        
     msgTextBox.delete(1.0, tk.END)
-
     
     imgFound = 0
     imgMissCount = 0
@@ -187,18 +191,18 @@ label.grid(column=0, row=0, pady=5, padx=5)
 
 # 서브 롬 폴더 콤보 박스
 basePath = cfg.getBasePath()
-subDirs = readSubDirs()
+subDirs = fileUtil.readSubDirs()
 
 while len(subDirs) == 0:
     # 서브 롬 폴더가 없을 경우 파일 다이얼로그를 열어서 폴더를 선택하도록 한다.
     # 폴더 선택 후 다시 서브 롬 폴더를 읽어온다.
     
     # 오류 메시지 표시
-    mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 선택해 주세요.")
+    mBox.showerror("서브 롬 폴더 없음", "기본 폴더에 서브 롬 폴더가 없습니다. 기본 폴더를 다시 선택해 주세요.")
     from tkinter import filedialog    
     basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
     os.chdir(basePath)
-    subDirs = readSubDirs()
+    subDirs = fileUtil.readSubDirs()
 
     # 설정 업데이트
     cfg.setBasePath(basePath)    
@@ -361,7 +365,7 @@ fileDeleteButton.grid(column=0, row=4, pady=5, padx=5)
 
 def setBasePath():
     '''
-    파일 다이얼로그를 열어기본 폴더를 설정한다.
+    파일 다이얼로그를 열어 기본 폴더를 설정한다.
     기본 폴더는 서브 롬 폴더가 있어야 하며 잘못 선택할 경우 다시 선택하도록 한다.
     '''
     from tkinter import filedialog
@@ -370,7 +374,7 @@ def setBasePath():
     while True:   
         basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
         os.chdir(basePath)
-        subDirs = readSubDirs()
+        subDirs = fileUtil.readSubDirs()
         if len(subDirs) != 0: 
             break
         mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 다시 선택해 주세요.")   
@@ -384,10 +388,9 @@ def setBasePath():
 def setBasePathHandler():
     '''
     기본 폴더를 재설정하는 핸들러
-    '''
-    subDirs = setBasePath()        
-    subRomDirBox['values'] = subDirs
-    subRomDirBox.set(cfg.getLastRomDir())
+    '''    
+    subRomDirBox['values'] = fileUtil.setBasePath()
+    subRomDirBox.set(status.getLastSubRomDirectory())
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 setBasePathButton = ttk.Button(settingFrame, text="기본 폴더 재설정", command=setBasePathHandler)
@@ -407,11 +410,9 @@ setTargetPathButton = ttk.Button(settingFrame, text="기기 폴더 재설정", c
 setTargetPathButton.grid(column=0, row=1, pady=5, padx=5)
 
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
-if  cfg.getLastRomDir() in subRomDirBox['values']:
-    subRomDirBox.set(cfg.getLastRomDir())
-else:
-    subRomDirBox.set(subRomDirBox['values'][0])
-
+if  not status.getLastSubRomDirectory() in subRomDirBox['values']:
+    status.setLastSubRomDirectory(subRomDirBox['values'][0])
+subRomDirBox.set(status.getLastSubRomDirectory())
 subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 # 설정 파일 열기 버튼
@@ -448,8 +449,9 @@ scraperXmlDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 # 종료시 설정을 저장한다.
 def onClosing():
     print("메인 프로그램 종료")
-    cfg.setLastRomDir(subRomDirBox.get())
-    cfg.save()
+    status.setLastRomIndex(lastRomIdx)
+    status.setLastSubRomDirectory(subRomDirBox.get())    
+    status.save()
     root.destroy()
 
 root.protocol("WM_DELETE_WINDOW", onClosing)

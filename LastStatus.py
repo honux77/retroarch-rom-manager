@@ -53,28 +53,14 @@ class LastStatus:
         마지막으로 선택한 롬의 인덱스를 설정한다.
         '''
         self.lastStatusJson['lastRomIndex'] = lastRomIndex
-
-    def getLastRomName(self):
-        '''
-        마지막으로 선택한 롬의 이름을 반환한다.
-        롬 이름을 변경했을 경우 인덱스로 마지막 롬을 찾을 수 없기 때문에 이름을 이용해야 한다.
-        '''
-        return self.lastStatusJson['lastRomName']    
-    
-    def setLastRomName(self, lastRomName):
-        '''
-        마지막으로 선택한 롬의 이름을 설정한다.
-        '''
-        self.lastStatusJson['lastRomName'] = lastRomName
         
     def __createDefaultFile(self):
         '''
         마지막 상태 파일이 없을 때 기본 마지막 상태 파일을 생성한다.
         '''
         defaultJson =   {
-            "lastSubRomDirectory": "nes",
-            "lastRomIndex": 0,
-            "lastRomName": "Unknown"
+            "lastSubRomDirectory": "unknown",
+            "lastRomIndex": 0            
         }
 
         json.dump(defaultJson, open(self.jsonFileName, 'w+'), indent=4)
@@ -86,5 +72,3 @@ if __name__ == "__main__":
     lastStatus = LastStatus()
     print("Sub Rom Dir:", lastStatus.getLastSubRomDirectory())
     print("Rom Index:", lastStatus.getLastRomIndex())
-    print("Rom Name:", lastStatus.getLastRomName())
-
