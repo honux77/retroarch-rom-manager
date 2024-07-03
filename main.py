@@ -8,6 +8,7 @@ from tkinter import scrolledtext
 from tkinter import Menu
 from tkinter import Text
 from tkinter import simpledialog
+from tkinter import messagebox as mBox
 
 from PIL import ImageTk, Image
 
@@ -143,7 +144,7 @@ def deleteRomAndImageHandler():
     romName = romListBox.get(romListBox.curselection())
     romDir = subRomDirBox.get()
 
-    deleteRomAndImages(romDir, xmlGameList.getRomPath(romName), xmlGameList.getImagePath(romName))
+    fileUtil.deleteRomAndImages(romDir, xmlGameList.getRomPath(romName), xmlGameList.getImagePath(romName))
 
     # 롬리스트에서도 해당 목록을 제거한다.
     xmlGameList.remove(romName)
