@@ -30,8 +30,6 @@ status = lastStatus.LastStatus()
 # global variable
 lastRomIdx = status.getLastRomIdx()
 programPath = os.getcwd()
-## find romPath by Idx
-romTable = {}
 
 # Create instance
 root = tk.Tk()
@@ -53,7 +51,7 @@ def subRomDirBoxHandler(event):
     이미지가 없을 경우 빨간색으로 표시한다.
     없는 이미지는 가장 유사한 이미지 이름을 찾아서 보여준다.
     '''    
-    global mBox, romTable
+    global mBox
     
     romDir = subRomDirBox.get()
     fileUtil.changeSubRomDir(romDir)
@@ -68,17 +66,12 @@ def subRomDirBoxHandler(event):
     msgTextBox.delete(1.0, tk.END)
     
     imgFound = 0
-    imgMissCount = 0
+    imgMissCount = 0    
 
-    currIdx = 0
-    romTable = {}
-
-    for game in xmlListManager.gameMap.values():
+    for game in xmlListManager.gameList:
         from os import path
         romName = game['name']
         romListBox.insert(tk.END, romName)
-        romTable[currIdx] = path.basename(game['path'])  
-        currIdx += 1                  
         
         if not os.path.isfile(game['image']):
             if imgMissCount == 0:
@@ -97,7 +90,7 @@ def subRomDirBoxHandler(event):
 
     # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.    
     global lastRomIdx        
-    if lastRomIdx >= romListBox.size() - 1:
+    if lastRomIdx < romListBox.size() - 1:
         lastRomIdx = 0
         romListBox.select_set(0)
     else:
@@ -110,7 +103,7 @@ def romListBoxSelectHandler(event):
     event: tkinter의 이벤트 객체
     '''
 
-    global lastRomIdx, romTable
+    global lastRomIdx
 
     xmlManager = xmlUtil.XmlManager()
     
@@ -118,14 +111,13 @@ def romListBoxSelectHandler(event):
     if len(romListBox.curselection()) == 0: return
     
     lastRomIdx = romListBox.curselection()[0]    
-    romName = romTable.get(lastRomIdx) 
+    game = xmlManager.findGameByIdx(lastRomIdx)
+    imagePath = game['image']
     
-    print("롬파일 정보 읽기: ", romName)     
+    print("롬파일 정보 읽기: ", game['path']) 
 
     # 이미지를 미리 보여준다.
-    import imgUtil
-    imagePath = xmlManager.getImagePath(romName) 
-    game = xmlManager.findGame(romName)
+    import imgUtil        
     imageTk = imgUtil.findImage(imagePath)    
 
     if len(imagePath) > 20:
@@ -355,8 +347,6 @@ runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행",
 
 runRomButton.grid(column=0, row=0, pady=5, padx=5)
 
-# 기기 폴더 열기 버튼
-
 def openFolderHandler(folderPath):
     '''
     기기 폴더를 열어주는 핸들러
@@ -366,15 +356,12 @@ def openFolderHandler(folderPath):
     else:
         mBox.showerror("폴더 없음", folderPath + " 가 없습니다. 폴더를 확인해 주세요.")
 
-folderSelectButton = ttk.Button(buttonFrame, text="기기 폴더 열기", command=lambda: openFolderHandler(cfg.getTargetPath()))
-folderSelectButton.grid(column=0, row=1, pady=5, padx=5)
-
 # 롬 폴더 열기 버튼
-romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: openFolderHandler(subRomDirBox.get()))
+romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: openFolderHandler(os.getcwd()))
 romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
-imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(xmlGameList.getBestMatchedImagePath()))
+imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(xmlM.getBestMatchedImagePath()))
 imgFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼
