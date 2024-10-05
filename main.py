@@ -98,6 +98,7 @@ def subRomDirBoxHandler(event):
 
     romListBox.select_set(lastRomIdx)                
     
+    # 롬 디렉토리가 변경된 경우에만 강제로 롬 선택 핸들러를 호출한다.
     if readRom:
         romListBox.event_generate("<<ListboxSelect>>")    
 
