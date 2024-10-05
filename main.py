@@ -29,6 +29,7 @@ status = lastStatus.LastStatus()
 
 # global variable
 lastRomIdx = status.getLastRomIdx()
+lastSubRomDir = status.getLastSubRomDirectory()
 programPath = os.getcwd()
 
 # Create instance
@@ -51,9 +52,16 @@ def subRomDirBoxHandler(event):
     이미지가 없을 경우 빨간색으로 표시한다.
     없는 이미지는 가장 유사한 이미지 이름을 찾아서 보여준다.
     '''    
-    global mBox
+    global mBox, lastSubRomDir, lastRomIdx
     
     romDir = subRomDirBox.get()
+    readRom = True
+
+    if romDir != lastSubRomDir:
+        lastSubRomDir = romDir
+        lastRomIdx = 0
+        readRom = False
+        
     fileUtil.changeSubRomDir(romDir)
     xmlListManager = xmlUtil.XmlManager()
     xmlListManager.readGamesFromXml()
@@ -88,14 +96,10 @@ def subRomDirBoxHandler(event):
     else:           
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
-    # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.    
-    global lastRomIdx        
-    if lastRomIdx < romListBox.size() - 1:
-        lastRomIdx = 0
-        romListBox.select_set(0)
-    else:
-        romListBox.select_set(lastRomIdx)                
-    romListBox.event_generate("<<ListboxSelect>>")
+    romListBox.select_set(lastRomIdx)                
+    
+    if readRom:
+        romListBox.event_generate("<<ListboxSelect>>")    
 
 def romListBoxSelectHandler(event):
     '''
