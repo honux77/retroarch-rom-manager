@@ -7,7 +7,7 @@ def translateGameInfo(game: dict):
     
     config = Config()
     print(game)
-    game['name'] = translate.translateText(game['name'], cconfigfg)
+    game['name'] = translate.translateText(game['name'], config)
     game['desc'] = translate.translateText(game['desc'], config)    
     print(f"번역된 게임 제목: {game['name']}")
     print(f"번역된 게임 설명: {game['desc']}")
