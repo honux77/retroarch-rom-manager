@@ -348,39 +348,5 @@ class XmlManager:
         if not dryRun:
             self.tree.write(self.xmlPath, 'UTF-8')
             self.load(self.subRomDir)
-        return True
-            
-    
-# main function for test
-
-if __name__ == '__main__':
-    import os
-    cfg = Config()
-    os.chdir(cfg.getBasePath())
-    
-    # 로딩 테스트
-    print("\n로딩 테스트")
-    
-    g = XmlGameList('gba-test')
-
-    topGames = g.gameList[:10]
-    
-
-    print("Top 10 games: ")
-    for game in topGames:
-        print(game)
-    
-
-    # 롬 이름 검색 테스트
-    name = g.gameList[0]['name']
-    game = g.findGame(name)
-    print(name, game, name == game['name'])
-
-    ## 이미지 경로 테스트
-    print("이미지 경로", g.getImagePath(name))
-
-    ## 롬 삭제 테스트
-    g.remove(name, dryRun=True)
-    print("삭제 후 검색결과: ", g.findGame(name))
-    print("삭제 후 Top 리스트: ", g.gameList[:5])
-        
+        return True        
+   
