@@ -27,8 +27,6 @@ class XmlManager:
         if not path.isfile(self.xmlPath):
             self.createXML()
 
-        #self.readGamesFromXml()
-
     
     def clear(self):
         '''
@@ -47,8 +45,7 @@ class XmlManager:
         if force and path.isfile(self.xmlPath):
             print("기존 XML 파일을 삭제합니다. ", self.xmlPath)
             self.clear()
-            os.remove(self.xmlPath)
-            
+            os.remove(self.xmlPath)            
         
         if not path.isfile(self.xmlPath):
             print("XML 파일이 없습니다. ", self.xmlPath)
@@ -282,8 +279,9 @@ class XmlManager:
         롬 경로를 받아서 해당 롬 정보를 반환한다.
         해당 롬 경로가 없을 경우 None을 반환한다.
         '''
-        if romPath in self.gameMap:
-            return self.gameMap[romPath]
+        romName = path.basename(romPath)
+        if romName in self.gameMap:
+            return self.gameMap[romName]
         return None
         
     
@@ -293,19 +291,19 @@ class XmlManager:
                 return game
         return None
     
-    def getRomPath(self, romName):
+    def getRomPath(self, romPath):
         '''
         롬 이름을 받아서 롬 경로를 반환한다.
         해당 롬 이름의 경로가 없을 경우 None을 반환한다.
         '''
-        return self.findGame(romName)['path']
+        return self.findGame(path.basename(romPath))['path']
 
-    def getImagePath(self, romName):
+    def getImagePath(self, romPath):
         '''
         롬 이름을 받아서 이미지 경로를 반환한다.
         해당 롬 이름의 이미지가 없을 경우 None을 반환한다.
-        '''
-        return self.findGame(romName)['image']
+        '''        
+        return self.findGame(romPath)['image']
     
     def updateGame(self, oldRomName, newGame:dict, dryRun=False):
         '''

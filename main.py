@@ -28,9 +28,7 @@ config = config.Config()
 status = lastStatus.LastStatus()
 
 # global variable
-xmlGameList = None
-lastRomIdx = status.getLastRomIndex()
-lastRomName = None
+lastRomName = status.getLastRomName()
 programPath = os.getcwd()
 
 # Create instance
@@ -45,7 +43,7 @@ ico = Image.open("./resources/icon16.png")
 photo = ImageTk.PhotoImage(ico)
 
 # 작업 디렉토리를 변경한다.
-os.chdir(cfg.getBasePath())
+fileUtil.changeRootDir()
 
 def subRomDirBoxHandler(event):
     '''
@@ -53,10 +51,12 @@ def subRomDirBoxHandler(event):
     이미지가 없을 경우 빨간색으로 표시한다.
     없는 이미지는 가장 유사한 이미지 이름을 찾아서 보여준다.
     '''    
-    global xmlGameList, mBox
+    global mBox
     
     romDir = subRomDirBox.get()
-    xmlListManager = xmlUtil.XmlListManager(romDir)
+    fileUtil.changeSubRomDir(romDir)
+    xmlListManager = xmlUtil.XmlManager()
+    xmlListManager.readGamesFromXml()
     if xmlListManager.tree == None:
         mBox.showerror("XML 파일 없음", f"{romDir}에 XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
         return
@@ -68,11 +68,11 @@ def subRomDirBoxHandler(event):
     imgFound = 0
     imgMissCount = 0
 
-    for game in xmlGameList.gameList:
-        romName = game['name']
+    for game in xmlListManager.gameMap.values():
+        romName = game['path']
         romListBox.insert(tk.END, romName)                    
         
-        if not os.path.isfile(path.join(romDir, game['image'])):
+        if not os.path.isfile(game['image']):
             if imgMissCount == 0:
                 msgTextBox.insert(tk.INSERT, "=== 존재하지 않는 이미지 목록 ===\n\n")
             
@@ -88,10 +88,14 @@ def subRomDirBoxHandler(event):
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
     # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.    
-    global lastRomIdx
-    if lastRomIdx >= romListBox.size():
-        lastRomIdx = romListBox.size() - 1
-    romListBox.select_set(lastRomIdx)
+    global lastRomName    
+    print("lastRomName: ", lastRomName)
+    if lastRomName == 'unknown' or xmlListManager.findGame(lastRomName) == None:
+        lastRomName = romListBox.get(0)                
+        romListBox.select_set(0)
+    else:
+        romListBox.select_set(romListBox.get(0, tk.END).index(lastRomName))        
+        
     romListBox.event_generate("<<ListboxSelect>>")
 
 def romListBoxSelectHandler(event):
@@ -100,27 +104,31 @@ def romListBoxSelectHandler(event):
     event: tkinter의 이벤트 객체
     '''
 
-    global xmlGameList, lastRomIdx, lastRomName
+    global lastRomName
+
+    xmlManager = xmlUtil.XmlManager()
     
     # 포커스를 잃을 경우 에러가 나는 문제 해결을 위한 코드
     if len(romListBox.curselection()) == 0: return
-
-    lastRomIdx = romListBox.curselection()[0]        
+    
+    romName = romListBox.get(romListBox.curselection()[0])  
+    lastRomName = romName    
+    print("lastRomName: ", lastRomName)
 
     # 이미지를 미리 보여준다.
     import imgUtil
-    romName = romListBox.get(romListBox.curselection())  
-    iamgePath = xmlGameList.getImagePath(romName) 
-    game = xmlGameList.findGame(romName)
-    imageTk = imgUtil.findImage(subRomDirBox.get(), iamgePath)
+    imagePath = xmlManager.getImagePath(romName) 
+    game = xmlManager.findGame(romName)
+    imageTk = imgUtil.findImage(imagePath)    
 
-    if len(iamgePath) > 20:
-        iamgePath = iamgePath[:20] + "..."
+    if len(imagePath) > 20:
+        imagePath = imagePath[:20] + "..."
 
     if (imageTk != None):        
         imgLabel.configure(image=imageTk)
         imgLabel.image = imageTk        
     else:
+        print(f"{imagePath} 이미지가 없습니다. 가장 유사한 이미지를 찾습니다.")
         imgLabel.configure(image=baseImageTk, width=500)    
 
     # 롬의 세부 정보를 보여준다.
@@ -143,11 +151,12 @@ def deleteRomAndImageHandler():
     # 먼저 파일과 이미지를 삭제한다.
     romName = romListBox.get(romListBox.curselection())
     romDir = subRomDirBox.get()
+    xmlManager = xmlUtil.XmlManager()
 
-    fileUtil.deleteRomAndImages(romDir, xmlGameList.getRomPath(romName), xmlGameList.getImagePath(romName))
+    fileUtil.deleteRomAndImages(romDir, xmlManager.getRomPath(romName), xmlManager.getImagePath(romName))
 
     # 롬리스트에서도 해당 목록을 제거한다.
-    xmlGameList.remove(romName)
+    xmlManager.remove(romName)
     
     # 롬 리스트를 다시 읽어서 보여준다.
     subRomDirBox.event_generate("<<ComboboxSelected>>")
@@ -191,7 +200,7 @@ label = ttk.Label(titleFrame, text="롬 폴더")
 label.grid(column=0, row=0, pady=5, padx=5)
 
 # 서브 롬 폴더 콤보 박스
-basePath = cfg.getBasePath()
+basePath = config.getBasePath()
 subDirs = fileUtil.readSubDirs()
 
 while len(subDirs) == 0:
@@ -266,12 +275,13 @@ def updateRomInfoHandler():
     '''
     롬 정보를 업데이트하는 핸들러
     '''
-    global xmlGameList, lastRomIdx
+    global lastRomIdx
 
     # 롬 선택 핸들러 코드를 참고할 것 
     # 롬 정보를 수정하면 롬리스트가 포커스를 잃어버리기 때문에 미리 lastRomName을 저장해 두었다.    
-    lastRomName = romListBox.get(lastRomIdx)        
-    game = xmlGameList.findGame(lastRomName)
+    lastRomName = romListBox.get(lastRomIdx)    
+    xmlManager = xmlUtil.XmlManager()    
+    game = xmlManager.findGame(lastRomName)
 
     # 새로운 다이얼로그를 열어 정말 저장 할 건지 물어본다.
     romInfo = '''롬 이름: {}
@@ -286,7 +296,7 @@ def updateRomInfoHandler():
         game['rating'] = romRatingEntry.get()
         game['image'] = romImageEntry.get()
         game['desc'] = romDescriptionText.get(1.0, tk.END)
-        xmlGameList.updateGame(lastRomName, game)        
+        xmlManager.updateGame(lastRomName, game)        
         subRomDirBox.event_generate("<<ComboboxSelected>>")
     
 
@@ -296,15 +306,16 @@ romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트
 romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
 
 def translateGameInfoHandler():
-    global lastRomIdx
-    lastRomName = romListBox.get(lastRomIdx)        
-    game = xmlGameList.findGame(lastRomName)
-    translate.translateGameInfo(game, cfg)
+    global lastRomName
+    xmlManager = xmlUtil.XmlManager()
+
+    game = xmlManager.findGame(lastRomName)
+    translate.translateGameInfo(game)
     romTitleEntry.delete(0, tk.END)
     romTitleEntry.insert(0, game['name'])
     romDescriptionText.delete(1.0, tk.END)
     romDescriptionText.insert(1.0, game['desc'])
-    xmlGameList.updateGame(lastRomName, game)
+    xmlManager.updateGame(lastRomName, game)
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 translateGameInfoButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 번역하기", command=translateGameInfoHandler)
@@ -450,7 +461,7 @@ scraperXmlDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 # 종료시 설정을 저장한다.
 def onClosing():
     print("메인 프로그램 종료")
-    status.setLastRomIndex(lastRomIdx)
+    status.setLastRomName(lastRomName)
     status.setLastSubRomDirectory(subRomDirBox.get())    
     status.save()
     root.destroy()

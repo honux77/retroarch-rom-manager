@@ -2,14 +2,13 @@ import os
 from os import path
 from PIL import Image, ImageTk
 
-def findImage(romDir, imgPath):      
+def findImage(imgPath):      
     maxWidth = 380
     maxHeight = 380
-
-    fullPath = path.join(romDir, imgPath)        
-    if not path.isfile(fullPath):
+      
+    if not path.isfile(imgPath):
         return None
-    image = Image.open(fullPath)        
+    image = Image.open(imgPath)        
     w, h = image.size
 
     if w >= h and w > maxWidth:
