@@ -57,6 +57,7 @@ def subRomDirBoxHandler(event):
     romDir = subRomDirBox.get()
     readRom = True
 
+    # 롬 디렉토리가 변경되면 자동으로 이벤트가 발생되기 때문에 강제로 이벤트를 호출하지 않는다.
     if romDir != lastSubRomDir:
         lastSubRomDir = romDir
         lastRomIdx = 0
