@@ -42,17 +42,17 @@ class LastStatus:
         '''
         self.lastStatusJson['lastSubRomDirectory'] = lastSubRomDirectory
     
-    def getLastRomName(self):
+    def getLastRomIdx(self):
         '''
         마지막으로 선택한 롬의 인덱스를 반환한다.
         '''
-        return self.lastStatusJson['lastRomName']
+        return self.lastStatusJson['lastRomIdx']
     
-    def setLastRomName(self, lastRomName):
+    def setLastRomIdx(self, lastRomName):
         '''
         마지막으로 선택한 롬의 인덱스를 설정한다.
         '''
-        self.lastStatusJson['lastRomName'] = lastRomName
+        self.lastStatusJson['lastRomIdx'] = lastRomName
         
     def __createDefaultFile(self):
         '''
@@ -60,7 +60,7 @@ class LastStatus:
         '''
         defaultJson =   {
             "lastSubRomDirectory": "unknown",
-            "lastRomName": "unknown"            
+            "lastRomIdx": 0
         }
 
         json.dump(defaultJson, open(self.jsonFileName, 'w+'), indent=4)

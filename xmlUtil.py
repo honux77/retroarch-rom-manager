@@ -26,15 +26,29 @@ class XmlManager:
 
         if not path.isfile(self.xmlPath):
             self.createXML()
+        self.updateList()
+
+    def updateList(self):
+        '''
+        gameList를 gameMap에서 생성한다.
+        '''
+        self.gameList = sorted(list(self.gameMap.values()), key=lambda x: x['name'])
+    
+    def reload(self):
+        if self.gameMap is None or len(self.gameMap) == 0:
+            self.readGamesFromXml()
+        if self.gameList is None or len(self.gameList) == 0:
+            self.updateList()
 
     
     def clear(self):
         '''
-        gameMap을 초기화한다.
+        tree, xmlRoot, gameMap, gameList를 초기화한다.
         '''
         self.tree = None
         self.xmlRoot = None
         self.gameMap = {}
+        self.gameList = []
 
     def createXML(self, force=False):
         '''
@@ -65,7 +79,7 @@ class XmlManager:
         subRomDir: 서브 롬 디렉토리
         '''
         self.clear()
-        self._load()
+        self._load()        
         self._updateFromScrapper()
 
     def save(self):
@@ -109,7 +123,7 @@ class XmlManager:
     def _addGameInSubRomDirectory(self):
         '''
         리스트에 누락된 파일들을 추가
-        서브 롬 디렉토리의 파일들을 읽어 gameMap에 추가한다.
+        서브 롬 디렉토리의 파일들을 읽어 gameMap과 xmlRoot에 추가한다.
         파일들의 확장자는 config에서 설정한 확장자와 일치하는 파일만 추가한다.
         '''
 
@@ -132,7 +146,7 @@ class XmlManager:
                 print("Add game: ", game)
                 self.gameMap[romFile] = game
                 self._addNodeInGameNodes(game)
-                append = True        
+                append = True                
         return append
     
     def _importFromSkraperXmlFile(self):        
@@ -204,11 +218,11 @@ class XmlManager:
     
     def _load(self):
         '''
-        XML 파일을 읽어서 gameMap를 생성한다.        
+        XML 파일을 읽어서 tree, xmlRoot, gameMap, gameList를 생성한다.        
         '''        
+        self.clear()
         self.tree = ET.parse(self.xmlPath)
-        self.xmlRoot = self.tree.getroot()
-        self.gameMap = {}
+        self.xmlRoot = self.tree.getroot()        
         update = False
         for gameNode in self.xmlRoot.findall('game'):            
 
@@ -271,9 +285,9 @@ class XmlManager:
             print("Update XML file: ", self.xmlPath)
             self.tree.write(self.xmlPath, 'UTF-8')
         
+        self.updateList()
         print(f"게임 리스트 XML 파일 {self.xmlPath}에서 {len(self.gameMap)} 개의 게임정보를 읽었습니다. ")
 
-        
     def findGame(self, romfile):
         '''
         롬 경로를 받아서 해당 롬 정보를 반환한다.
@@ -281,6 +295,14 @@ class XmlManager:
         '''
         if romfile in self.gameMap:
             return self.gameMap[romfile]
+        return None
+    
+    def findByIdx(self, idx):
+        '''
+        인덱스로 게임을 찾는다.
+        '''
+        if idx < len(self.gameList):
+            return self.gameList[idx]
         return None
         
     
