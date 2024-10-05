@@ -274,14 +274,13 @@ class XmlManager:
         print(f"게임 리스트 XML 파일 {self.xmlPath}에서 {len(self.gameMap)} 개의 게임정보를 읽었습니다. ")
 
         
-    def findGame(self, romPath):
+    def findGame(self, romfile):
         '''
         롬 경로를 받아서 해당 롬 정보를 반환한다.
         해당 롬 경로가 없을 경우 None을 반환한다.
         '''
-        romName = path.basename(romPath)
-        if romName in self.gameMap:
-            return self.gameMap[romName]
+        if romfile in self.gameMap:
+            return self.gameMap[romfile]
         return None
         
     

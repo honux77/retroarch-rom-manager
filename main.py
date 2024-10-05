@@ -69,7 +69,8 @@ def subRomDirBoxHandler(event):
     imgMissCount = 0
 
     for game in xmlListManager.gameMap.values():
-        romName = game['path']
+        from os import path
+        romName = path.basename(game['path'])
         romListBox.insert(tk.END, romName)                    
         
         if not os.path.isfile(game['image']):
@@ -88,14 +89,12 @@ def subRomDirBoxHandler(event):
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
     # 기존에 마지막으로 선택했던 롬을 다시 보여주도록 이벤트를 발생시킨다.    
-    global lastRomName    
-    print("lastRomName: ", lastRomName)
+    global lastRomName        
     if lastRomName == 'unknown' or xmlListManager.findGame(lastRomName) == None:
         lastRomName = romListBox.get(0)                
         romListBox.select_set(0)
     else:
-        romListBox.select_set(romListBox.get(0, tk.END).index(lastRomName))        
-        
+        romListBox.select_set(romListBox.get(0, tk.END).index(lastRomName))                
     romListBox.event_generate("<<ListboxSelect>>")
 
 def romListBoxSelectHandler(event):
@@ -112,8 +111,8 @@ def romListBoxSelectHandler(event):
     if len(romListBox.curselection()) == 0: return
     
     romName = romListBox.get(romListBox.curselection()[0])  
-    lastRomName = romName    
-    print("lastRomName: ", lastRomName)
+    lastRomName = romName
+    print("롬파일 정보 읽기: ", romName)     
 
     # 이미지를 미리 보여준다.
     import imgUtil
