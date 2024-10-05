@@ -16,13 +16,13 @@ from PIL import ImageTk, Image
 import translate
 
 # local module
-import xmlUtil 
+import xmlUtil
 import fileUtil 
 import config
 import lastStatus
 
 # load config
-cfg = config.Config()
+config = config.Config()
 
 # load lastStatus
 status = lastStatus.LastStatus()
@@ -56,8 +56,8 @@ def subRomDirBoxHandler(event):
     global xmlGameList, mBox
     
     romDir = subRomDirBox.get()
-    xmlGameList = xmlUtil.XmlGameList(romDir)
-    if xmlGameList.tree == None:
+    xmlListManager = xmlUtil.XmlListManager(romDir)
+    if xmlListManager.tree == None:
         mBox.showerror("XML 파일 없음", f"{romDir}에 XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
         return
     

@@ -7,7 +7,7 @@ from os import path
 
 cfg = Config()
 
-class XmlGameList:
+class XmlManager:
     '''
     XML로 GameList 를 저장하고 관리한다.
     '''
@@ -27,6 +27,12 @@ class XmlGameList:
         if path.isfile(self.xmlPath):
             self.load(subRomDir)
         else:
+            self.createXML()
+
+    def createXML(self, force=False):
+        if force and path.isfile(self.xmlPath):
+            os.remove(self.xmlPath)
+        if not path.isfile(self.xmlPath):
             print("XML 파일이 없습니다. ", self.xmlPath)
             print("새로운 XML 파일을 생성합니다.")
             self.tree = ET.ElementTree(ET.Element('gameList'))
@@ -34,7 +40,9 @@ class XmlGameList:
             self.gameList = []
             self._addGameInSubRomDirectory()
             self.tree.write(self.xmlPath, 'UTF-8')
-            self.load(subRomDir)
+            self.load(self.subRomDir)
+            return True
+        return False
         
     def load(self, subRomDir):
         '''
@@ -50,28 +58,6 @@ class XmlGameList:
         gameList를 XML 파일에 저장한다.
         '''
         self.tree.write(self.xmlPath, 'UTF-8')
-
-    def getBestMatchedImagePath(self):
-        '''
-        전체 게임의 이미지 경로 중 가장 많은 파일을 포함한 경로를 반환
-        '''
-        # image 속성 에서 디렉토리만 분리하고 빈도수를 센다.
-        imagePaths = [path.dirname(game['image']) for game in self.gameList]
-        imagePathCount = {}
-        for imagePath in imagePaths:
-            if imagePath in imagePathCount:
-                imagePathCount[imagePath] += 1
-            else:
-                imagePathCount[imagePath] = 1
-
-        # 가장 많은 빈도수를 가진 image 경로를 반환한다.
-        maxCount = 0
-        maxImagePath = None
-        for imagePath, count in imagePathCount.items():
-            if count > maxCount:
-                maxCount = count
-                maxImagePath = imagePath
-        return path.join(self.subRomDir, maxImagePath)
 
     def _createImagePath(gameNode):
         '''

@@ -1,6 +1,5 @@
 {
     "basePath": "D:/Retropie/roms",
-    "targetPath": "f:\\",
     "extension": [
         "zip",
         "chd",
@@ -11,6 +10,7 @@
     "scrapperXmlName": "game.xml",
     "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
     "cores": {
+        "anux": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
         "gb": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
         "gbc": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
         "gba": "C:\\RetroArch-Win64\\cores\\gpsp_libretro.dll",
