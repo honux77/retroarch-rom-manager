@@ -9,7 +9,19 @@ import tkinter as tk
 from tkinter import messagebox as mBox
 
 from config import Config
-cfg = Config()
+config = Config()
+
+def getExtension(f):
+    '''
+    파일의 확장자를 반환한다.
+    '''
+    return path.splitext(f)[1]
+
+def changeRootDir():
+    os.chdir(config.getBasePath())
+
+def changeSubRomDir(subPath):
+    os.chdir(path.join(config.getBasePath(), subPath))
 
 def readSubDirs():        
     '''

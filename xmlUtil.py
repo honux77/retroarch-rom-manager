@@ -21,32 +21,35 @@ class XmlManager:
         self.subRomDir = subRomDir
         self.xmlPath = path.join(subRomDir, cfg.getXmlName())
         self.tree = None
-        self.gameList = None
-        self.gameNodes = None
+        self.xmlRoot = None
 
         if path.isfile(self.xmlPath):
             self.load(subRomDir)
         else:
             self.createXML()
 
+        self.gameMap = self.loadGameMap(self.subRomDir)
+
     def createXML(self, force=False):
+        '''
+        게임리스트 XML 파일이 존재하지 않으면 새로 생성한다.
+        force: True인 경우 기존 XML 파일을 삭제하고 새로 생성한다.        
+        '''
         if force and path.isfile(self.xmlPath):
             os.remove(self.xmlPath)
         if not path.isfile(self.xmlPath):
             print("XML 파일이 없습니다. ", self.xmlPath)
             print("새로운 XML 파일을 생성합니다.")
             self.tree = ET.ElementTree(ET.Element('gameList'))
-            self.gameNodes = self.tree.getroot()
-            self.gameList = []
+            self.xmlRoot = self.tree.getroot()            
             self._addGameInSubRomDirectory()
-            self.tree.write(self.xmlPath, 'UTF-8')
-            self.load(self.subRomDir)
+            self.tree.write(self.xmlPath, 'UTF-8')            
             return True
         return False
         
-    def load(self, subRomDir):
+    def loadGameMap(self, subRomDir):
         '''
-        XML 파일을 읽어서 gameList를 생성한다.
+        XML 파일을 읽어서 gameMap을 생성한다.
         subRomDir: 서브 롬 디렉토리
         '''
         self.subRomDir = subRomDir
@@ -97,9 +100,11 @@ class XmlManager:
         서브 롬 디렉토리의 파일들을 읽어 gameList에 추가한다.
         파일들의 확장자는 config에서 설정한 확장자와 일치하는 파일만 추가한다.
         '''
+
+        from fileUtil import getExtension
         
-        romFiles = [f for f in os.listdir(self.subRomDir) if path.isfile(path.join(self.subRomDir, f)) and path.splitext(f)[1][1:] in cfg.getExtension()]
-        listFiles = [f['path'][2:] for f in self.gameList]        
+        romFiles = [f for f in os.listdir(self.subRomDir) if path.isfile(path.join(self.subRomDir, f)) and getExtension(f) in cfg.getExtension()]
+      
         append = False
 
         for romFile in romFiles:

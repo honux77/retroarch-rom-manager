@@ -2,6 +2,9 @@ import json
 import os
 from os import path
 
+from decorator import singleton
+
+@singleton
 class Config:
     '''
     환경 설정을 담당하는 클래스
@@ -9,8 +12,10 @@ class Config:
     '''
 
     def __init__(self):
-        # setup 윈도우에서 저장하기를 누를 때 기본 폴더가 변경되어 발생하는 오류를 막기위해 현재 폴더를 기본 폴더로 설정한다.
+        # setup 윈도우에서 저장하기를 누를 때 기본 폴더가 변경되어 발생하는 오류를 막기위해 절대 경로로 파일 위치를 지정정
+        print("Load Global Configurations")
         self.jsonFileName = path.join(os.getcwd(), 'config.json')
+        print("설정 파일 경로: ", self.jsonFileName)
         self.load()
         self.loadSecretIni()
 

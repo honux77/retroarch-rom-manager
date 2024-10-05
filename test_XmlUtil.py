@@ -17,4 +17,7 @@ class TestXmlUtil:
         assert isCreate == True
         isCreate = self.xmlManager.createXML()
         assert isCreate == False
-        
+    
+    def test_loadXml(self):
+        self.xmlManager.loadXml()
+        assert len(self.xmlManager.getXml()) > 0
