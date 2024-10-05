@@ -11,11 +11,17 @@ from tkinter import messagebox as mBox
 from config import Config
 config = Config()
 
+def getFileNameWithoutExt(f):
+    '''
+    파일의 확장자를 제외한 이름을 반환한다.
+    '''
+    return path.splitext(f)[0]
+
 def getExtension(f):
     '''
     파일의 확장자를 반환한다.
     '''
-    return path.splitext(f)[1]
+    return path.splitext(f)[1][1:]
 
 def changeRootDir():
     os.chdir(config.getBasePath())
