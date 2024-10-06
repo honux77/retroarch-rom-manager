@@ -2,6 +2,10 @@ import json
 import os
 from os import path
 
+from decorator import singleton
+
+
+@singleton
 class LastStatus:
     '''
     프로그램의 마지막 상태를 저장하는 클래스
@@ -34,18 +38,23 @@ class LastStatus:
         '''
         마지막으로 선택한 롬폴더를 반환한다.
         '''
+        if 'lastSubRomDirectory' not in self.lastStatusJson:
+            self.lastStatusJson['lastSubRomDirectory'] = 'unknown'
+            
         return self.lastStatusJson['lastSubRomDirectory']
 
     def setLastSubRomDirectory(self, lastSubRomDirectory):
         '''
         마지막으로 선택한 롬폴더를 경로를 설정한다.
-        '''
+        '''        
         self.lastStatusJson['lastSubRomDirectory'] = lastSubRomDirectory
     
     def getLastRomIdx(self):
         '''
         마지막으로 선택한 롬의 인덱스를 반환한다.
         '''
+        if 'lastSubRomDirectory' not in self.lastStatusJson:
+            self.lastStatusJson['lastSubRomDirectory'] = 'unknown'
         return self.lastStatusJson['lastRomIdx']
     
     def setLastRomIdx(self, lastRomName):

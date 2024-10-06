@@ -19,6 +19,7 @@
         "msx1": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
         "msx2": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
         "fbneo": "C:\\RetroArch-Win64\\cores\\fbneo_libretro.dll",
+        "mame": "C:\\RetroArch-Win64\\cores\\mame_libretro.dll",
         "nes": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
         "fds": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
         "pcengine": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",

@@ -311,6 +311,12 @@ class XmlManager:
         if idx < len(self.gameList):
             return self.gameList[idx]
         return None
+    
+    def findGameIndex(self, game):
+        '''
+        게임을 찾아서 인덱스를 반환한다.
+        '''
+        return self.gameList.index(game)
         
     
     def _findGameNode(self, gamePath):        
@@ -336,13 +342,15 @@ class XmlManager:
     def updateGame(self, oldRomPath, newGame:dict, dryRun=False):
         '''
         롬 이름을 받아서 해당 롬 정보를 업데이트한다.
+        업데이트 대상: xml, gameMap, gameList
         dryRun이 True인 경우 XML 파일을 업데이트하지 않는다.
         newGame: 업데이트할 롬 정보 딕셔너리
         '''
-        # xml 엘리먼트만 업데이트한다.                
+        # xml 엘리먼트 업데이트한다.                
         gameNode = self._findGameNode(oldRomPath)
+
         if gameNode is None:
-            return False
+            return -1
         gameNode.find('name').text = newGame['name']
         gameNode.find('path').text = newGame['path']
         gameNode.find('image').text = newGame['image']
@@ -350,28 +358,29 @@ class XmlManager:
         gameNode.find('desc').text = newGame['desc']
         
         if not dryRun:
-            self.tree.write(self.xmlPath, 'UTF-8')            
-        return True
+            self.tree.write(self.xmlPath, 'UTF-8')   
+
+        # remove old game and add new game
+        self.gameMap[oldRomPath] = newGame
+        self.updateList()
+        return self.findGameIndex(newGame)
     
-    def remove(self, romName, dryRun=False):
+    def remove(self, game, dryRun=False):
         '''
         롬 이름을 받아서 해당 롬을 리스트에서 제거한다.
         '''
 
-        # gameList에서 제거
-        game = self.findGame(romName)
-        if game is None:
-            return False
         self.gameList.remove(game)        
+        self.gameMap.pop(game['path'])
 
         # XML 엘리먼트도 제거
-        game = self._findGameNode(romName)
+        game = self._findGameNode(game['path']) 
         if game is None:
             return False
-        self.gameNodes.remove(game)
+        self.xmlRoot.remove(game)
 
         if not dryRun:
             self.tree.write(self.xmlPath, 'UTF-8')
-            self.load(self.subRomDir)
+            self.readGamesFromXml()
         return True        
    

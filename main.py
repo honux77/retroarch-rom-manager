@@ -156,15 +156,14 @@ def deleteRomAndImageHandler():
     선택된 롬과 이미지를 삭제하는 핸들러
     '''
 
-    # 먼저 파일과 이미지를 삭제한다.
-    romName = romListBox.get(romListBox.curselection())
-    romDir = subRomDirBox.get()
+    # 먼저 파일과 이미지를 삭제한다.    
     xmlManager = xmlUtil.XmlManager()
+    game = xmlManager.findGameByIdx(lastRomIdx)
+    fileUtil.deleteRomAndImages(game)
 
-    fileUtil.deleteRomAndImages(romDir, xmlManager.getRomPath(romName), xmlManager.getImagePath(romName))
-
-    # 롬리스트에서도 해당 목록을 제거한다.
-    xmlManager.remove(romName)
+    #XML에서 해당 목록을 제거한다.
+    xmlManager.remove(game)
+    lastRomIdx = 0
     
     # 롬 리스트를 다시 읽어서 보여준다.
     subRomDirBox.event_generate("<<ComboboxSelected>>")
@@ -218,12 +217,12 @@ while len(subDirs) == 0:
     # 오류 메시지 표시
     mBox.showerror("서브 롬 폴더 없음", "기본 폴더에 서브 롬 폴더가 없습니다. 기본 폴더를 다시 선택해 주세요.")
     from tkinter import filedialog    
-    basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
+    basePath = filedialog.askdirectory(initialdir=config.getBasePath())    
     os.chdir(basePath)
     subDirs = fileUtil.readSubDirs()
 
     # 설정 업데이트
-    cfg.setBasePath(basePath)    
+    config.setBasePath(basePath)    
 
 subRomDirBox = ttk.Combobox(titleFrame, values=subDirs)
 
@@ -305,11 +304,9 @@ def updateRomInfoHandler():
         game['rating'] = romRatingEntry.get()
         game['image'] = romImageEntry.get()
         game['desc'] = romDescriptionText.get(1.0, tk.END)
-        xmlManager.updateGame(oldPath, game)        
+        lastRomIdx = xmlManager.updateGame(oldPath, game)    
+        print("인덱스 업데이트:", lastRomIdx)
         subRomDirBox.event_generate("<<ComboboxSelected>>")
-    
-
-
 
 romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
 romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
@@ -325,7 +322,8 @@ def translateGameInfoHandler():
     romTitleEntry.insert(0, game['name'])
     romDescriptionText.delete(1.0, tk.END)
     romDescriptionText.insert(1.0, game['desc'])
-    xmlManager.updateGame(filename, game)
+    lastRomIdx = xmlManager.updateGame(filename, game)
+    print("인덱스 업데이트:", lastRomIdx)
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 translateGameInfoButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 번역하기", command=translateGameInfoHandler)
@@ -390,16 +388,16 @@ def setBasePath():
 
     subDirs = []
     while True:   
-        basePath = filedialog.askdirectory(initialdir=cfg.getBasePath())    
+        basePath = filedialog.askdirectory(initialdir=config.getBasePath())    
         os.chdir(basePath)
         subDirs = fileUtil.readSubDirs()
         if len(subDirs) != 0: 
             break
         mBox.showerror("서브 롬 폴더 없음", "서브 롬 폴더가 없습니다. 폴더를 다시 선택해 주세요.")   
     
-    cfg.setBasePath(basePath)
-    cfg.setLastRomDir(subDirs[0])
-    cfg.save()
+    config.setBasePath(basePath)
+    config.setLastRomDir(subDirs[0])
+    config.save()
     return subDirs
 
 # 기본 폴더 재설정 버튼
@@ -420,9 +418,9 @@ def setTargetPathHandler():
     기기 폴더를 재설정하는 핸들러
     '''
     from tkinter import filedialog    
-    targetPath = filedialog.askdirectory(initialdir=cfg.getTargetPath())    
-    cfg.setTargetPath(targetPath)
-    cfg.save()
+    targetPath = filedialog.askdirectory(initialdir=config.getTargetPath())    
+    config.setTargetPath(targetPath)
+    config.save()
 
 setTargetPathButton = ttk.Button(settingFrame, text="기기 폴더 재설정", command=setTargetPathHandler)
 setTargetPathButton.grid(column=0, row=1, pady=5, padx=5)
@@ -434,12 +432,12 @@ subRomDirBox.set(status.getLastSubRomDirectory())
 subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 # 설정 파일 열기 버튼
-openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", command=lambda: os.startfile(cfg.getConfigFilePath()))
+openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", command=lambda: os.startfile(config.getConfigFilePath()))
 openConfigButton.grid(column=0, row=2, pady=5, padx=5)
 
 # RetroArch 폴더 열기 버튼
 # 전체 경로에서 retroarch 폴더만 가져와서 열어준다.
-retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(cfg.getRetroarchPath())))
+retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(config.getRetroarchPath())))
 retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
 # Scrapper 실행 버튼

@@ -81,21 +81,21 @@ def printRomInfo(imgPath, romPath):
         if f not in imgs:
             print("Image not exists: ", f)
 
-def deleteRomAndImages(subPath, romPath, imggePath):
+def deleteRomAndImages(game):
     msg = ""
-    result = mBox.askquestion("삭제", "{}\n {}\n 선택된 롬과 이미지를 삭제하시겠습니까?".format(romPath, imggePath))
+    romPath = game['path']
+    imagePath = game['image']
+    result = mBox.askquestion("삭제", "{}\n {}\n 선택된 롬과 이미지를 삭제하시겠습니까?".format(romPath, imagePath))
 
     if result == 'no':
         return "삭제 취소"
     
-    rom = path.join(subPath, romPath)    
-    img = path.join(subPath, imggePath)
     try:
-        os.remove(rom)
+        os.remove(romPath)
     except:
         msg += "롬 삭제 실패"
     try:
-        os.remove(img)    
+        os.remove(imagePath)    
     except:
         msg += "이미지 삭제 실패"
         return msg
