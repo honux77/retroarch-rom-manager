@@ -38,7 +38,7 @@ def readSubDirs():
     romDir.sort()
     return romDir
 
-def findSimilarImage(romDir, romName, imgDir):
+def findSimilarImage(romPath, imgDir):
     
     '''
     romName과 가장 유사한 이미지 이름을 찾아서 반환한다.
@@ -48,8 +48,14 @@ def findSimilarImage(romDir, romName, imgDir):
     '''
     
     import fuzzywuzzy.process as fuzzProcess
-    allImages = [f for f in os.listdir(path.join(romDir, imgDir)) if path.isfile(path.join(romDir, imgDir, f))]    
-    return fuzzProcess.extractOne(romName, allImages)
+    title = getFileNameWithoutExt(romPath)
+    # title에서 ()안의 내용을 제거한다.
+    title = re.sub(r'\([^)]*\)', '', title)
+    # title에서 []안의 내용을 제거한다.
+    title = re.sub(r'\[[^)]*\]', '', title)
+    print(title)
+    allImages = [f for f in os.listdir(imgDir) if path.isfile(path.join(imgDir, f))]        
+    return fuzzProcess.extractOne(title, allImages)    
 
 def imageDelete(imgPath, romPath):
     import os

@@ -184,28 +184,29 @@ class XmlManager:
         if self.scrapGames is None:
             return
         updateCount = 0
-        for game in self.gameMap.values:
-            oldName = game['name']
+        for game in self.gameList:
+            oldpath = game['path']
             update = False
             if game['path'] in self.scrapGames:
+                scrapGame = self.scrapGames[game['path']]
                 
                 # 한글 이름이 아니고 다른 내용이 있을 경우 업데이트한다.
-                if game['name'].isascii() and game['name'] != self.scrapGames[game['path']]['name']:
-                    print("Update game name: ", game['path'], game['name'], self.scrapGames[game['path']]['name'])
-                    game['name'] = self.scrapGames[game['path']]['name']
+                if game['name'].isascii() and game['name'] != scrapGame['name']:
+                    print(f"Update game name: {game['path']} {game['name']} --> {scrapGame['name']}")
+                    game['name'] = scrapGame['name']
                     update = True
                 
                 # 설명이 한글이 아니고 변경사항이 있을 경우만 업데이트한다.
-                if game['desc'].isascii() and game['desc'][:20] != self.scrapGames[game['path']]['desc'][:20]:
-                    print("Update game desc before: ", game['path'], game['desc'])
-                    print("Update game desc after: ", game['path'], self.scrapGames[game['path']]['desc'])
+                if scrapGame['desc'] != None and game['desc'].isascii() and game['desc'][:20] != scrapGame['desc'][:20]:
+                    print("Game desc before: ", game['path'], game['desc'])
+                    print("Game desc after: ", game['path'], self.scrapGames[game['path']]['desc'])
                     game['desc'] = self.scrapGames[game['path']]['desc'].strip()
                     update = True
                 
                 if update:
                     updateCount += 1
                     print("Update game: ", game['path'], end=' ')
-                    print(self.updateGame(oldName, game, dryRun=True))
+                    print(self.updateGame(oldpath, game, dryRun=True))
         
         if updateCount > 0:
             print("Update {} games from skraper xml file".format(updateCount))

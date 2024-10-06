@@ -134,6 +134,9 @@ def romListBoxSelectHandler(event):
         imgLabel.image = imageTk        
     else:
         print(f"{imagePath} 이미지가 없습니다. 가장 유사한 이미지를 찾습니다.")
+        ret = fileUtil.findSimilarImage(game['path'], path.dirname(game['image']))
+        msgTextBox.insert(tk.INSERT, f"\n유사한 이미지: {ret[0]}\n")
+
         imgLabel.configure(image=baseImageTk, width=500)    
 
     # 롬의 세부 정보를 보여준다.
@@ -314,9 +317,9 @@ romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
 def translateGameInfoHandler():
     global lastRomIdx, romTable
     xmlManager = xmlUtil.XmlManager()
-    filename = romTable.get(lastRomIdx)
-    game = xmlManager.findGame(filename
-                               )
+    game = xmlManager.findGameByIdx(lastRomIdx)
+    filename = game['path']
+    
     translate.translateGameInfo(game)
     romTitleEntry.delete(0, tk.END)
     romTitleEntry.insert(0, game['name'])
@@ -440,7 +443,7 @@ retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열�
 retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
 # Scrapper 실행 버튼
-runScrapperButton = ttk.Button(settingFrame, text="Scrapper 실행", command=lambda: asyncio.run(mainFunc.runScrapper(cfg)))
+runScrapperButton = ttk.Button(settingFrame, text="Scrapper 실행", command=lambda: asyncio.run(mainFunc.runScrapper(config)))
 runScrapperButton.grid(column=0, row=4, pady=5, padx=5)
 
 
@@ -458,7 +461,7 @@ def deleteFile(filePath):
         mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일이 없습니다.")
 
 scraperXmlDeleteButton = ttk.Button(settingFrame, text="ScrapXML 삭제", 
-                                    command=lambda: deleteFile(path.join(subRomDirBox.get(), cfg.getScrapperXmlName())))
+                                    command=lambda: deleteFile(config.getScrapperXmlName()))
 scraperXmlDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 
 # 종료시 설정을 저장한다.
