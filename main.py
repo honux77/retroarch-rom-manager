@@ -369,7 +369,7 @@ romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=
 romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
 
 # 이미지 폴더 열기 버튼
-imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(xmlM.getBestMatchedImagePath()))
+imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(path.join(os.getcwd(), path.dirname(xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['image']))))
 imgFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 
 # 롬 파일 및 이미지 삭제 버튼

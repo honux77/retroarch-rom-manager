@@ -331,7 +331,7 @@ class XmlManager:
         해당 롬 이름의 이미지가 없을 경우 None을 반환한다.
         '''        
         return self.findGameByPath(romPath)['image']
-    
+
     def updateGame(self, oldRomPath, newGame:dict, dryRun=False):
         '''
         롬 이름을 받아서 해당 롬 정보를 업데이트한다.
