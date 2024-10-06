@@ -34,7 +34,7 @@ programPath = os.getcwd()
 
 # Create instance
 root = tk.Tk()
-root.title("RetroArch Rom Manager")
+root.title("RetroArch Rom Manager v20241016")
 root.geometry("1200x800")
 
 # 현재 디렉토리의 리소스 디렉토리에서 아이콘과 기본 이미지를 읽어온다.
