@@ -280,13 +280,14 @@ def updateRomInfoHandler():
     '''
     롬 정보를 업데이트하는 핸들러
     '''
-    global lastRomIdx, romTable
+    global lastRomIdx
 
     # 롬 선택 핸들러 코드를 참고할 것 
     # 롬 정보를 수정하면 롬리스트가 포커스를 잃어버리기 때문에 미리 lastRomIdx를 저장해 두었다.    
-    romfile = romTable.get(lastRomIdx)
-    xmlManager = xmlUtil.XmlManager()    
-    game = xmlManager.findGame(romfile)
+    xmlManager = xmlUtil.XmlManager()
+    game = xmlManager.findGameByIdx(lastRomIdx)
+    oldPath = game['path']
+    xmlManager = xmlUtil.XmlManager()        
 
     # 새로운 다이얼로그를 열어 정말 저장 할 건지 물어본다.
     romInfo = '''롬 이름: {}
@@ -301,7 +302,7 @@ def updateRomInfoHandler():
         game['rating'] = romRatingEntry.get()
         game['image'] = romImageEntry.get()
         game['desc'] = romDescriptionText.get(1.0, tk.END)
-        xmlManager.updateGame(romfile, game)        
+        xmlManager.updateGame(oldPath, game)        
         subRomDirBox.event_generate("<<ComboboxSelected>>")
     
 
@@ -348,8 +349,9 @@ imgLabel.grid(column=0, row=1, pady=5, padx=5)
 # 선택 롬 실행 버튼
 import mainFunc
 import asyncio
+
 runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", 
-                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlGameList.findGame(romListBox.get(lastRomIdx))['path'],cfg)))
+                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['path'],config)))
 
 runRomButton.grid(column=0, row=0, pady=5, padx=5)
 

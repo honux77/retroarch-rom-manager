@@ -312,9 +312,9 @@ class XmlManager:
         return None
         
     
-    def _findGameNode(self, name):
+    def _findGameNode(self, gamePath):        
         for game in self.xmlRoot.findall('game'):
-            if game.find('name').text == name:
+            if game.find('path').text == gamePath:
                 return game
         return None
     
@@ -332,14 +332,14 @@ class XmlManager:
         '''        
         return self.findGameByPath(romPath)['image']
     
-    def updateGame(self, oldRomName, newGame:dict, dryRun=False):
+    def updateGame(self, oldRomPath, newGame:dict, dryRun=False):
         '''
         롬 이름을 받아서 해당 롬 정보를 업데이트한다.
         dryRun이 True인 경우 XML 파일을 업데이트하지 않는다.
         newGame: 업데이트할 롬 정보 딕셔너리
         '''
         # xml 엘리먼트만 업데이트한다.                
-        gameNode = self._findGameNode(oldRomName)
+        gameNode = self._findGameNode(oldRomPath)
         if gameNode is None:
             return False
         gameNode.find('name').text = newGame['name']
@@ -349,8 +349,7 @@ class XmlManager:
         gameNode.find('desc').text = newGame['desc']
         
         if not dryRun:
-            self.tree.write(self.xmlPath, 'UTF-8')
-            self.load(self.subRomDir)
+            self.tree.write(self.xmlPath, 'UTF-8')            
         return True
     
     def remove(self, romName, dryRun=False):
