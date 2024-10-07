@@ -12,6 +12,12 @@ from config import Config
 config = Config()
 
 
+def getRomCount():
+    '''
+    현재 작업 디렉토리의 롬 개수를 반환한다.
+    '''
+    return len([f for f in os.listdir() if path.isfile(f) and getExtension(f) in config.getExtension()])
+
 def getCurrentRomDirName():
     '''
     현재 작업 디렉토리로부터 마지막 폴더 이름을 반환한다.

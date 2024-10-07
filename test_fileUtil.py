@@ -31,6 +31,15 @@ class TestFileUtil:
         import fileUtil
         subdir = fileUtil.getCurrentRomDirName()
         assert subdir == self.SUBDIR
+
+    def test_getRomCount(self):
+        '''
+        하위 디렉토리의 파일 갯수를 읽는지 테스트
+        '''
+        import fileUtil
+        count = fileUtil.getRomCount()
+        print(f"서브롬 디렉토리 {self.SUBDIR}의 롬파일 갯수: {count}")
+        assert count > 3
         
 
     
