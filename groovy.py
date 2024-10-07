@@ -62,8 +62,8 @@ def exportGroovyList(dryRun=False):
             for row in groovyData:
                 writer.writerow(row)
 
-    print(f'{len(gameMap)} 게임 중 {matchCount}개 일치')
-    return (matchCount,len(gameMap))
+    print(f'{len(groovyData)} 게임 중 {matchCount}개 일치')
+    return (matchCount,len(groovyData))
         
         
 

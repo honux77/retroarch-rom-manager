@@ -7,10 +7,11 @@ class TestGroovy:
         import fileUtil
         from xmlUtil import XmlManager
 
-        fileUtil.changeSubRomDir('nes')
+        SUBDIR = 'mame'
+
+        fileUtil.changeSubRomDir(SUBDIR)
         self.config = config.Config()
         self.xmlManager = XmlManager()
-        self.SUBDIR = 'nes'        
         
 
     def test_readCsv(self):
@@ -30,3 +31,4 @@ class TestGroovy:
         import groovy
         (match, total) = groovy.exportGroovyList(dryRun=False)
         assert match > 0 and total > 0
+        assert match == total
