@@ -11,6 +11,16 @@ from tkinter import messagebox as mBox
 from config import Config
 config = Config()
 
+
+def getCurrentRomDirName():
+    '''
+    현재 작업 디렉토리로부터 마지막 폴더 이름을 반환한다.
+    ex) C:\roms\gb -> gb
+    '''
+    import pathlib
+    return pathlib.Path().absolute().name
+
+
 def getFileNameWithoutExt(f):
     '''
     파일의 확장자를 제외한 이름을 반환한다.

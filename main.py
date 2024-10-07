@@ -97,7 +97,11 @@ def subRomDirBoxHandler(event):
     else:           
         msgTextBox.insert(tk.INSERT,"\n총 {}개의 롬 중 {}개의 이미지가 존재하지 않습니다.".format(imgFound + imgMissCount, imgMissCount))
 
-    romListBox.select_set(lastRomIdx)                
+    romListBox.select_set(lastRomIdx)  
+
+    # 롬리스트 박스의 길이가 긴 경우 스크롤을 추가한다.
+    if len(xmlListManager.gameList) > 20:
+        romListBox.config(height=20)
     
     # 롬 디렉토리가 변경된 경우에만 강제로 롬 선택 핸들러를 호출한다.
     if readRom:
@@ -117,6 +121,7 @@ def romListBoxSelectHandler(event):
     if len(romListBox.curselection()) == 0: return
     
     lastRomIdx = romListBox.curselection()[0]    
+    romListBox.see(lastRomIdx)
     game = xmlManager.findGameByIdx(lastRomIdx)
     imagePath = game['image']
     
@@ -155,7 +160,8 @@ def deleteRomAndImageHandler():
     '''
     선택된 롬과 이미지를 삭제하는 핸들러
     '''
-
+    
+    global lastRomIdx
     # 먼저 파일과 이미지를 삭제한다.    
     xmlManager = xmlUtil.XmlManager()
     game = xmlManager.findGameByIdx(lastRomIdx)

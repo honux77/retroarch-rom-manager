@@ -113,7 +113,19 @@ class Config:
         '''
         if self.secret == None:
             return None
-        return self.secret['DEFAULT']['DeepLApiKey']
+        return self.secret['DEFAULT']['DeepLApiKey']    
+    
+    def getGroovyListPath(self):
+        '''
+        Groovy 리스트 파일 경로를 반환한다.
+        '''
+        return self.configJson['groovyListPath']
+
+    def getGroovyListFilename(self, subRomDir):
+        '''
+        Groovy 리스트 파일명을 반환한다.
+        '''
+        return self.configJson['groovyListFilename'][subRomDir]
     
 
 # main function for test

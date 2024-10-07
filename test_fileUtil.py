@@ -24,4 +24,13 @@ class TestFileUtil:
         fileUtil.changeSubRomDir(self.SUBDIR)
         assert os.getcwd() == self.config.getBasePath() + '\\' + self.SUBDIR
 
+    def test_getCurrentRomDirName(self):
+        '''
+        하위 디렉토리를 읽는지 테스트
+        '''
+        import fileUtil
+        subdir = fileUtil.getCurrentRomDirName()
+        assert subdir == self.SUBDIR
+        
+
     

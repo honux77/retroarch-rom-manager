@@ -25,5 +25,10 @@
         "pcengine": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
         "pcenginecd": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll"
     },
-    "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe"
+    "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",
+    "groovyListPath": "D:\\Retropie\\romlists",    
+    "groovyListFilename": {
+        "mame": "mame.txt",
+        "nes": "Nintendo - Nintendo Entertainment System.txt"
+    }
 }
