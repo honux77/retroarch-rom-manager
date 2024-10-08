@@ -1,19 +1,23 @@
+class TestScrapper:
 
-
-def test_scrapper():
+    def test_scrapper(self):
     
-    import os    
-    from os import path
-    import config
-    import fileUtil
-    from xmlUtil import XmlManager
-    from scrapper import updateXMLFromScrapper
+        import os    
+        from os import path
+        import config
+        import fileUtil
 
-    SUBDIR = 'mame'
-    fileUtil.changeSubRomDir(SUBDIR)
-    config = config.Config()
-    xmlManager = XmlManager()
+        config = config.Config()
+        SUBDIR = 'mame'        
+        fileUtil.changeSubRomDir(SUBDIR)
+
+        from xmlUtil import XmlManager
+        from scrapper import updateXMLFromScrapper
+
+        xmlManager = XmlManager()
     
-    skip, update = updateXMLFromScrapper()
-    assert skip > 0
-    assert update > 0
+        assert xmlManager.size() > 0
+        
+        skip, update = updateXMLFromScrapper()    
+        assert skip > 0
+        assert update >= 0

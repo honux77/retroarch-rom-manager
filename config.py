@@ -127,6 +127,18 @@ class Config:
         '''
         return self.configJson['groovyListFilename'][subRomDir]
     
+    def getGroovySkipWord(self):
+        '''
+        Groovy 리스트에서 제외할 단어를 반환한다.
+        '''
+        return self.configJson['groovySkipWord']
+    
+    def getScrapperSkipWord(self):
+        '''
+        스크래퍼에서 제외할 단어를 반환한다.
+        '''
+        return self.configJson['scrapperSkipWord']
+    
 
 # main function for test
 if __name__ == "__main__":

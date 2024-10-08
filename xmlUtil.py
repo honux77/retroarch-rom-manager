@@ -24,9 +24,9 @@ class XmlManager:
         Constructor: 현재 디렉토리에서 XML 파일을 읽어서 gameMap을 생성한다.        
         만약 XML 파일이 없으면 새로 XML 파일을 생성한다.
         '''
-        print("XmlManager 생성")
+        
+        print("XmlManager 생성자 호출")
         self.xmlPath = cfg.getXmlName() 
-        self.clear()
 
         if not path.isfile(self.xmlPath):
             self.createXML()   
@@ -34,7 +34,10 @@ class XmlManager:
         self.readGamesFromXml()
     
     def size(self):
-            return len(self.gameMap)
+        '''
+        gameMap의 크기를 반환한다.
+        '''
+        return len(self.gameMap)
 
     def updateList(self):
         '''
@@ -92,96 +95,15 @@ class XmlManager:
         load되는 멤버 변수: tree, xmlRoot, gameMap, gameList
         subRomDir: 서브 롬 디렉토리
         '''
-        self.clear()
-        self._load()        
+        import fileUtil
+        print(fileUtil.getCurrentRomDirName())
+        self.clear()        
 
-    def save(self):
-        '''
-        gameList를 XML 파일에 저장한다.
-        '''
-        self.tree.write(self.xmlPath, 'UTF-8')
-
-    def _createImagePath(gameNode):
-        '''
-        image path가 없는 경우 추가
-        '''        
-        image = ET.SubElement(gameNode, 'image')
-        # get filename without extension
-        fileName = path.splitext(gameNode.find('path').text)[0][2:]
-        image.text =  "./media/images/" + fileName + ".png"
-        image.tail = '\n\t\t'  
-
-    def _addNodeInGameNodes(self, game):
-        '''
-        xmlRoot에 game을 추가한다.
-        '''
-        gameNode = ET.SubElement(self.xmlRoot, 'game')
-        name = ET.SubElement(gameNode, 'name')
-        name.text = game['name']
-        name.tail = '\n\t\t'
-        path = ET.SubElement(gameNode, 'path')
-        path.text = game['path']
-        path.tail = '\n\t\t'
-        image = ET.SubElement(gameNode, 'image')
-        image.text = game['image']
-        image.tail = '\n\t\t'
-        rating = ET.SubElement(gameNode, 'rating')
-        rating.text = game['rating']
-        rating.tail = '\n\t\t'
-        desc = ET.SubElement(gameNode, 'desc')
-        desc.text = game['desc']
-        desc.tail = '\n\t\t'
-
-
-    def _addGameInSubRomDirectory(self):
-        '''
-        리스트에 누락된 파일들을 추가
-        서브 롬 디렉토리의 파일들을 읽어 gameMap과 xmlRoot에 추가한다.
-        파일들의 확장자는 config에서 설정한 확장자와 일치하는 파일만 추가한다.
-        '''
-
-        from fileUtil import getExtension
-        from fileUtil import getFileNameWithoutExt
-        
-        romFiles = [f for f in os.listdir() if path.isfile(f) and getExtension(f) in cfg.getExtension()]
-        
-        append = 0
-        for romFile in romFiles:
-            # listFiles에 없는 경우 XML 리스트에 추가한다.
-            romPath = './' + romFile
-            if romPath not in self.gameMap:
-                game = {
-                    'name': getFileNameWithoutExt(romFile),
-                    'path': romPath,
-                    'image': './media/images/' + getFileNameWithoutExt(romFile) + '.png',
-                    'rating': '0.6',
-                    'desc': '{} is a good game!'.format(getFileNameWithoutExt(romFile)),
-                }
-                print("Add game: ", game)
-                self.gameMap[romFile] = game
-                self._addNodeInGameNodes(game)
-                append += 1                
-        return append
-    
-        
-    def _removeAllSubElements(self, element, pName):
-        '''
-        element의 모든 서브 엘리먼트를 제거한다.
-        <desc /> 속성으로 버그가 발생해서 해결하기 위해 작성
-        TODO: 더 좋은 방법은 없는지 찾아보자.
-        '''
-        for subElement in element.findall(pName):
-            element.remove(subElement)
-    
-    def _load(self):
-        '''
-        XML 파일을 읽어서 tree, xmlRoot, gameMap, gameList를 생성한다.        
-        '''        
-        self.clear()
         self.tree = ET.parse(self.xmlPath)
         self.xmlRoot = self.tree.getroot()        
         update = False
-        for gameNode in self.xmlRoot.findall('game'):            
+        for gameNode in self.xmlRoot.findall('game'):   
+            print("Find Game: ", gameNode.find('path').text)         
 
             # path가 ./로 시작하지 않는 경우 ./ 추가
             if gameNode.find('path').text[:2] != './':
@@ -238,12 +160,96 @@ class XmlManager:
         append = self._addGameInSubRomDirectory()
 
         # update XML file
-        if update or append:
+        if update or append > 0:
             print("Update XML file: ", self.xmlPath)
             self.tree.write(self.xmlPath, 'UTF-8')
         
         self.updateList()        
-        print(f"게임 리스트 XML 파일 {self.xmlPath}에서 {len(self.gameMap)} 개의 게임정보를 읽었습니다. ")
+        print(f"게임 리스트 XML 파일 {self.xmlPath}에서 {self.size()} 개의 게임정보를 읽었습니다. ")
+
+    def save(self):
+        '''
+        gameList를 XML 파일에 저장한다.
+        '''
+        self.tree.write(self.xmlPath, 'UTF-8')
+
+    def _createImagePath(gameNode):
+        '''
+        image path가 없는 경우 추가
+        '''        
+        image = ET.SubElement(gameNode, 'image')
+        # get filename without extension
+        fileName = path.splitext(gameNode.find('path').text)[0][2:]
+        image.text =  "./media/images/" + fileName + ".png"
+        image.tail = '\n\t\t'  
+
+    def _addNodeInGameNodes(self, game):
+        '''
+        xmlRoot에 game을 추가한다.
+        '''
+        gameNode = ET.SubElement(self.xmlRoot, 'game')
+        name = ET.SubElement(gameNode, 'name')
+        name.text = game['name']
+        name.tail = '\n\t\t'
+        path = ET.SubElement(gameNode, 'path')
+        path.text = game['path']
+        path.tail = '\n\t\t'
+        image = ET.SubElement(gameNode, 'image')
+        image.text = game['image']
+        image.tail = '\n\t\t'
+        rating = ET.SubElement(gameNode, 'rating')
+        rating.text = game['rating']
+        rating.tail = '\n\t\t'
+        desc = ET.SubElement(gameNode, 'desc')
+        desc.text = game['desc']
+        desc.tail = '\n\t\t'
+
+    def _addGameInSubRomDirectory(self):
+        '''
+        리스트에 누락된 파일들을 추가
+        서브 롬 디렉토리의 파일들을 읽어 gameMap과 xmlRoot에 추가한다.
+        파일들의 확장자는 config에서 설정한 확장자와 일치하는 파일만 추가한다.
+        return: 추가된 파일의 개수
+        '''
+
+        from fileUtil import getExtension
+        from fileUtil import getFileNameWithoutExt
+        
+        romFiles = [f for f in os.listdir() if path.isfile(f) and getExtension(f) in cfg.getExtension()]
+        
+        append = 0
+        for romFile in romFiles:
+            # listFiles에 없는 경우 XML 리스트에 추가한다.
+            romPath = './' + romFile
+            if romPath not in self.gameMap:
+                game = {
+                    'name': getFileNameWithoutExt(romFile),
+                    'path': romPath,
+                    'image': './media/images/' + getFileNameWithoutExt(romFile) + '.png',
+                    'rating': '0.6',
+                    'desc': '{} is a good game!'.format(getFileNameWithoutExt(romFile)),
+                }
+                print("Add game: ", game)
+                self.gameMap[romFile] = game
+                self._addNodeInGameNodes(game)
+                append += 1                
+        return append
+    
+        
+    def _removeAllSubElements(self, element, pName):
+        '''
+        element의 모든 서브 엘리먼트를 제거한다.
+        <desc /> 속성으로 버그가 발생해서 해결하기 위해 작성
+        TODO: 더 좋은 방법은 없는지 찾아보자.
+        '''
+        for subElement in element.findall(pName):
+            element.remove(subElement)
+    
+    def _load(self):
+        '''
+        XML 파일을 읽어서 tree, xmlRoot, gameMap, gameList를 생성한다.        
+        '''        
+        
 
     def findGameByPath(self, romPath):
         '''

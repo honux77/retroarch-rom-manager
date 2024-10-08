@@ -16,7 +16,7 @@ def updateXMLFromScrapper(dryRun=True):
     gameList = XmlManager.gameList
     skipWord = config.getScrapperSkipWord()    
     if scrapGames is None:
-        return 0
+        return 0,0
     
     updateCount = 0
     skipCount = 0
@@ -57,7 +57,7 @@ def updateXMLFromScrapper(dryRun=True):
     else:
         print("No game updated from skraper xml file")
 
-    return updateCount
+    return skipCount,updateCount
 
 
 def _importFromSkraperXmlFile():        
@@ -83,4 +83,4 @@ def _importFromSkraperXmlFile():
             'desc': desc
         }
     print("Skraper XML 파일 {}에서 {} 개의 게임정보를 읽었습니다. ".format(skraperXmlPath, len(scrapGames)))
-    return len(scrapGames)
+    return scrapGames
