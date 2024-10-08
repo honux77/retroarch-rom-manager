@@ -71,6 +71,8 @@ def findSimilarImage(romPath, imgDir):
     title = re.sub(r'\[[^)]*\]', '', title)
     print(title)
     allImages = [f for f in os.listdir(imgDir) if path.isfile(path.join(imgDir, f))]        
+    if len(allImages) == 0:
+        return ["이미지 폴더가 비었음"]
     return fuzzProcess.extractOne(title, allImages)    
 
 def imageDelete(imgPath, romPath):

@@ -4,7 +4,8 @@
         "zip",
         "chd",
         "dsk",
-        "fds"
+        "fds",
+        "cue"
     ],
     "xmlName": "gamelist.xml",
     "scrapperXmlName": "game.xml",
@@ -29,7 +30,8 @@
     "groovyListPath": "D:\\Retropie\\romlists",    
     "groovyListFilename": {
         "mame": "mame.txt",
-        "nes": "Nintendo - Nintendo Entertainment System.txt"
+        "nes": "Nintendo - Nintendo Entertainment System.txt",
+        "saturn": "Sega - Saturn.txt"
     },
     "groovySkipWord": "ZZZ",
     "scrapperSkipWord": "(PC)"

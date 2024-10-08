@@ -25,8 +25,11 @@ def exportGroovyList(dryRun=False):
     '''
     현재 xml 파일을 읽어서 MAME 게임 리스트 형식으로 변환 저장한다.
     '''
+    from os import path
+
     from config import Config
     import fileUtil
+    
     config = Config()
     xmlManager = XmlManager()
     xmlManager.readGamesFromXml()
@@ -35,21 +38,24 @@ def exportGroovyList(dryRun=False):
     gameMap = {}
     matchCount = 0
 
-    from os import path
     for game in xmlManager.gameList:
         # key =  filname from path ./hello.zip -> hello
         filename = path.splitext(path.basename(game['path']))[0]
-        print(filename)
         gameMap[filename] = game['name']
-
     
     for data in groovyData:
-        if data[0] in gameMap:
+
+        filename = data[0]
+        #if finlename ends with . remove it
+        if filename.endswith('.'):
+            filename = filename[:-1]
+
+        if filename in gameMap:
             matchCount += 1
-            print(f'파일명: {data[0]} 타이틀명: {gameMap[data[0]]}')
-            data[1] = gameMap[data[0]]    
+            print(f'파일명: {filename} 타이틀명: {gameMap[filename]}')
+            data[1] = gameMap[filename]    
         else:
-            print(f'파일명: {data[0]} **일치하는 타이틀 없음**')    
+            print(f'파일명: {filename} **일치하는 타이틀 없음**')    
     
     if not dryRun:
 

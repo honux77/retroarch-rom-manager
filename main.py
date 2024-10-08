@@ -178,6 +178,14 @@ def deleteRomAndImageHandler():
     # 롬 리스트를 다시 읽어서 보여준다.
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
+def exportGroovyList():
+    '''
+    그루비용 리스트를 내보내는 핸들러
+    '''
+    import groovy
+    groovy.exportGroovyList()
+    
+
 ########################
 # 중첩 프레임          #
 ########################
@@ -385,6 +393,10 @@ imgFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
 fileDeleteButton.grid(column=0, row=4, pady=5, padx=5)
+
+# 그루비 리스트 내보내기 버튼
+fileDeleteButton = ttk.Button(buttonFrame, text="그루비용 리스트 내보내기", command=exportGroovyList)
+fileDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 
 
 

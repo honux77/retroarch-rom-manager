@@ -96,7 +96,7 @@ class XmlManager:
         subRomDir: 서브 롬 디렉토리
         '''
         self.clear()        
-
+        self.createXML()
         self.tree = ET.parse(self.xmlPath)
         self.xmlRoot = self.tree.getroot()        
         update = False
