@@ -14,6 +14,7 @@ class XmlManager:
     '''
     XML을 읽고 처리하는 클래스 
     xml 안의 game을 map과 list로 관리한다.
+    scrapper 기능은 별도로 분리했으므로 주의할 것!
     gameMap: 롬 파일명을 키로 하고 롬 정보를 값으로 하는 딕셔너리
     gameList: gameMap의 값들을 정렬한 리스트
     '''
@@ -28,8 +29,9 @@ class XmlManager:
         self.clear()
 
         if not path.isfile(self.xmlPath):
-            self.createXML()        
-        self.updateList()       
+            self.createXML()   
+
+        self.readGamesFromXml()
     
     def size(self):
             return len(self.gameMap)
@@ -45,7 +47,6 @@ class XmlManager:
             self.readGamesFromXml()
         if self.gameList is None:
             self.updateList()
-
     
     def clear(self):
         '''
@@ -59,33 +60,40 @@ class XmlManager:
     def createXML(self, force=False):
         '''
         게임리스트 XML 파일이 존재하지 않으면 새로 생성한다.
-        force: True인 경우 기존 XML 파일을 삭제하고 새로 생성한다.        
+        force: True인 경우 기존 XML 파일을 삭제하고 새로 생성한다.
+        XML 생성 후 모든 멤버 변수를 리셋하므로 다시 데이터를 읽어야 한다.
+        return: 생성한 
        '''
-        
+
+        self.clear()        
+        count = 0
         if force and path.isfile(self.xmlPath):            
             print("기존 XML 파일을 삭제합니다. ", self.xmlPath)
-            os.remove(self.xmlPath)            
-        
+            os.remove(self.xmlPath)                    
+
         if not path.isfile(self.xmlPath):
             print("XML 파일이 없습니다. ", self.xmlPath)
             print("새로운 XML 파일을 생성합니다.")
-            self.clear()
             self.tree = ET.ElementTree(ET.Element('gameList'))
             self.xmlRoot = self.tree.getroot()            
-            self._addGameInSubRomDirectory()
-            self.tree.write(self.xmlPath, 'UTF-8')            
-            return True
-        print("XML 파일이 이미 존재합니다. ", self.xmlPath)
-        return False
+            count = self._addGameInSubRomDirectory()
+            self.tree.write(self.xmlPath, 'UTF-8')             
+        else:
+            print("XML 파일이 이미 존재합니다. ", self.xmlPath)        
         
-    def readGamesFromXml(self):
+        self.clear()
+        return count
+        
+        
+    def readGamesFromXml(self, scrapper=False):
         '''
         XML 파일을 읽어서 gameMap을 생성한다.
+        읽기 전에 모든 멤버 변수를 초기화한다.
+        load되는 멤버 변수: tree, xmlRoot, gameMap, gameList
         subRomDir: 서브 롬 디렉토리
         '''
         self.clear()
         self._load()        
-        self._updateFromScrapper()
 
     def save(self):
         '''
@@ -137,7 +145,7 @@ class XmlManager:
         
         romFiles = [f for f in os.listdir() if path.isfile(f) and getExtension(f) in cfg.getExtension()]
         
-        append = False
+        append = 0
         for romFile in romFiles:
             # listFiles에 없는 경우 XML 리스트에 추가한다.
             romPath = './' + romFile
@@ -152,67 +160,9 @@ class XmlManager:
                 print("Add game: ", game)
                 self.gameMap[romFile] = game
                 self._addNodeInGameNodes(game)
-                append = True                
+                append += 1                
         return append
     
-    def _importFromSkraperXmlFile(self):        
-        skraperXmlPath = cfg.getScrapperXmlName()
-        if not path.isfile(skraperXmlPath):
-            print("Skraper XML 파일이 없습니다. ", skraperXmlPath)
-            self.scrapGames = None
-            return 0
-        
-        skraperTree = ET.parse(skraperXmlPath)
-        skraperRoot = skraperTree.getroot()
-        gameNodes = skraperRoot.findall('game')
-        self.scrapGames = {}
-        for game in gameNodes:
-            gname = game.attrib['name']
-            gpath = "./" + game.find('rom').attrib['name']
-            desc = game.find('description').text if game.find('description') is not None else f'Description of {gname}'            
-            self.scrapGames[gpath] = {
-                'name': gname,
-                'path': gpath,
-                'desc': desc
-            }
-        print("Skraper XML 파일 {}에서 {} 개의 게임정보를 읽었습니다. ".format(skraperXmlPath, len(self.scrapGames)))
-        #os.remove(skraperXmlPath)
-        return len(self.scrapGames)
-    
-    def _updateFromScrapper(self):
-        self._importFromSkraperXmlFile()
-        if self.scrapGames is None:
-            return
-        updateCount = 0
-        for game in self.gameList:
-            oldpath = game['path']
-            update = False
-            if game['path'] in self.scrapGames:
-                scrapGame = self.scrapGames[game['path']]
-                
-                # 한글 이름이 아니고 다른 내용이 있을 경우 업데이트한다.
-                if game['name'].isascii() and game['name'] != scrapGame['name']:
-                    print(f"Update game name: {game['path']} {game['name']} --> {scrapGame['name']}")
-                    game['name'] = scrapGame['name']
-                    update = True
-                
-                # 설명이 한글이 아니고 변경사항이 있을 경우만 업데이트한다.
-                if scrapGame['desc'] != None and game['desc'].isascii() and game['desc'][:20] != scrapGame['desc'][:20]:
-                    print("Game desc before: ", game['path'], game['desc'])
-                    print("Game desc after: ", game['path'], self.scrapGames[game['path']]['desc'])
-                    game['desc'] = self.scrapGames[game['path']]['desc'].strip()
-                    update = True
-                
-                if update:
-                    updateCount += 1
-                    print("Update game: ", game['path'], end=' ')
-                    print(self.updateGame(oldpath, game, dryRun=True))
-        
-        if updateCount > 0:
-            print("Update {} games from skraper xml file".format(updateCount))
-            self.save()
-        else:
-            print("No game updated from skraper xml file")
         
     def _removeAllSubElements(self, element, pName):
         '''

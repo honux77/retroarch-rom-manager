@@ -52,6 +52,8 @@ def exportGroovyList(dryRun=False):
             print(f'파일명: {data[0]} **일치하는 타이틀 없음**')    
     
     if not dryRun:
+
+        skiplist = config.getSkipList()
         # write to file
         with open(path.join(config.getGroovyListPath(),
                         config.getGroovyListFilename(fileUtil.getCurrentRomDirName())),
@@ -60,6 +62,9 @@ def exportGroovyList(dryRun=False):
             writer = csv.writer(f, delimiter=';')
             writer.writerow(header)
             for row in groovyData:
+                for word in skiplist:
+                    if word in row[1]:
+                        continue
                 writer.writerow(row)
 
     print(f'{len(groovyData)} 게임 중 {matchCount}개 일치')

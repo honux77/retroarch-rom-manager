@@ -8,23 +8,27 @@ class TestXmlUtil:
         import fileUtil        
         
         self.ROMDIR = 'anux'
-        self.ROMSIZE = 8
-        self.config = config.Config()
+
+        self.config = config.Config()        
         fileUtil.changeSubRomDir(self.ROMDIR)
+        self.ROMSIZE = fileUtil.getRomCount()        
         self.xmlManager = xmlUtil.XmlManager()        
+
+    def test_init(self):
+        print(self.xmlManager.gameList)
+        assert self.xmlManager.size() == self.ROMSIZE
 
     def test_xml_create(self):
         # force delete GameList.xml        
-        isCreate = self.xmlManager.createXML(force=True)
-        assert isCreate == True
-        assert self.xmlManager.size() == self.ROMSIZE
+        count = self.xmlManager.createXML(force=True)
+        assert count == self.ROMSIZE
 
-        isCreate = self.xmlManager.createXML()
-        assert isCreate == False
+        count = self.xmlManager.createXML()
+        assert count == 0
 
-        assert self.xmlManager.xmlRoot != None
-        assert self.xmlManager.gameMap != None
-        assert self.xmlManager.size() == self.ROMSIZE
+        assert self.xmlManager.xmlRoot == None        
+        assert self.xmlManager.gameMap == {}
+        assert self.xmlManager.size() == 0
     
     def test_loadXml(self):
         self.xmlManager.clear()

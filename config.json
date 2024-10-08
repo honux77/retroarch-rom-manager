@@ -30,5 +30,7 @@
     "groovyListFilename": {
         "mame": "mame.txt",
         "nes": "Nintendo - Nintendo Entertainment System.txt"
-    }
+    },
+    "groovySkipWord": "ZZZ",
+    "scrapperSkipWords": "(PC) "
 }
