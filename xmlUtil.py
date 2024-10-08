@@ -24,7 +24,7 @@ class XmlManager:
         Constructor: 현재 디렉토리에서 XML 파일을 읽어서 gameMap을 생성한다.        
         만약 XML 파일이 없으면 새로 XML 파일을 생성한다.
         '''
-        
+
         print("XmlManager 생성자 호출")
         self.xmlPath = cfg.getXmlName() 
 
@@ -95,16 +95,12 @@ class XmlManager:
         load되는 멤버 변수: tree, xmlRoot, gameMap, gameList
         subRomDir: 서브 롬 디렉토리
         '''
-        import fileUtil
-        print(fileUtil.getCurrentRomDirName())
         self.clear()        
 
         self.tree = ET.parse(self.xmlPath)
         self.xmlRoot = self.tree.getroot()        
         update = False
         for gameNode in self.xmlRoot.findall('game'):   
-            print("Find Game: ", gameNode.find('path').text)         
-
             # path가 ./로 시작하지 않는 경우 ./ 추가
             if gameNode.find('path').text[:2] != './':
                 gameNode.find('path').text = './' + gameNode.find('path').text

@@ -65,10 +65,14 @@ def subRomDirBoxHandler(event):
         
     fileUtil.changeSubRomDir(romDir)
     xmlListManager = xmlUtil.XmlManager()
-    xmlListManager.readGamesFromXml()
+    xmlListManager.readGamesFromXml()    
+
     if xmlListManager.tree == None:
         mBox.showerror("XML 파일 없음", f"{romDir}에 XML 파일이 없습니다. 폴더를 확인하고 환경 설정을 다시 해 주세요.")
         return
+    
+    import scrapper
+    scrapper.updateXMLFromScrapper(dryRun=False)
     
     # 롬리스트박스와 메시지 박스를 초기화한다.
     romListBox.delete(0, tk.END)        
@@ -295,7 +299,6 @@ def updateRomInfoHandler():
     xmlManager = xmlUtil.XmlManager()
     game = xmlManager.findGameByIdx(lastRomIdx)
     oldPath = game['path']
-    xmlManager = xmlUtil.XmlManager()        
 
     # 새로운 다이얼로그를 열어 정말 저장 할 건지 물어본다.
     romInfo = '''롬 이름: {}

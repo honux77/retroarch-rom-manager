@@ -11,7 +11,7 @@ class TestXmlUtil:
 
         self.config = config.Config()        
         fileUtil.changeSubRomDir(self.ROMDIR)
-        self.ROMSIZE = fileUtil.getRomCount()        
+        self.ROMSIZE = fileUtil.getRomCount()                
         self.xmlManager = xmlUtil.XmlManager()        
 
     def test_init(self):
