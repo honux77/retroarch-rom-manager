@@ -7,10 +7,23 @@ class SyncFile:
         self.ssh = None
         self.connected = False
     
-    def setServerInfo(self, serverInfo):        
+    def setServerInfo(self, serverName):        
+        from os import path
+        from config import Config
+        import fileUtil
+        
+        config = Config()
+        subRomDir = fileUtil.getCurrentRomDirName()
+        server = config.getServerInfo(serverName)
+        serverInfo = server['serverInfo']
         self.address = serverInfo['address']
         self.user = serverInfo['user']
-        self.password = serverInfo['password']
+        self.password = serverInfo['password']        
+        
+        listfilename = server['listFilename'][subRomDir]
+        self.localPath = path.join(server['localListPath'], listfilename)
+        # linux에서는 /로 경로를 구분해서 path.join을 사용하면 안된다.
+        self.remotePath = server['remoteListPath'] +"/" + listfilename
         
     def connectSSH(self):
         import paramiko
@@ -30,28 +43,31 @@ class SyncFile:
         '''
         원격지의 게임 리스트를 로컬로 복사한다.
         현재는 groovy만 지원한다.
-        '''
-        import fileUtil
-        from config import Config
-        from os import path
-
-        config = Config()
-        groovy = config.getRemoteInfo('groovy')
-        subRomDir = fileUtil.getCurrentRomDirName()
-        listfilename = groovy['listFilename'][subRomDir]
-        localPath = path.join(groovy['localListPath'], listfilename)
-        # linux에서는 /로 경로를 구분해서 path.join을 사용하면 안된다.
-        remotePath = groovy['remoteListPath'] +"/" + listfilename
-            
+        ''' 
         sftp = self.ssh.open_sftp()
         try:
-            sftp.get(remotePath, localPath)
-            print(f'{remotePath} -> {localPath} 복사 완료')
+            sftp.get(self.remotePath, self.localPath)
+            print(f'{self.remotePath} -> {self.localPath} 복사 완료')
         except FileNotFoundError:
-            print(f'{remotePath} 파일이 존재하지 않습니다.')
+            print(f'{self.remotePath} 파일이 존재하지 않습니다.')
             return (None, None)
         finally:
             sftp.close()        
-        return (localPath, remotePath)
+        return (self.localPath, self.remotePath)
+    
+    def exportLocalList(self):
+        '''
+        로컬 롬 리스트를 서버로 업로드한다.
+        '''
+        sftp = self.ssh.open_sftp()
+        try:
+            sftp.put(self.localPath, self.remotePath)
+            print(f'{self.localPath} -> {self.remotePath} 복사 완료')
+        except FileNotFoundError:
+            print(f'{self.localPath} 파일이 존재하지 않습니다.')
+            return (None, None)
+        finally:
+            sftp.close()
+        return (self.localPath, self.remotePath)
         
         

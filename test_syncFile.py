@@ -12,9 +12,8 @@ class TestSyncFile:
         host = "groovy"
         subrom = "saturn"
         fileUtil.changeSubRomDir(subrom)
-
-        groovy = config.getRemoteInfo(host)
-        self.syncFile.setServerInfo(groovy['serverInfo'])
+        
+        self.syncFile.setServerInfo(host)
         connected = self.syncFile.connectSSH()
         assert connected == True
 
@@ -26,6 +25,12 @@ class TestSyncFile:
 
     def test_copyRemoteList(self):
         result = self.syncFile.copyRemoteList()
+        print(result)        
+        assert result[0] != None
+        assert result[1] != None
+
+    def test_exportLocalList(self):
+        result = self.syncFile.exportLocalList()
         print(result)        
         assert result[0] != None
         assert result[1] != None

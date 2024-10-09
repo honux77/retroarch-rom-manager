@@ -139,11 +139,8 @@ class Config:
         '''
         return self.configJson['scrapperSkipWord']
     
-    def getServerInfo(self, deviceName):
-        return self.configJson['ssh'][deviceName]
-    
-    def getRemoteInfo(self, remoteDevcieName):
-        return self.configJson[remoteDevcieName]
+    def getServerInfo(self, serverName):
+        return self.configJson[serverName]
     
 
 # main function for test

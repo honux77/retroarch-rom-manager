@@ -39,7 +39,8 @@
         "listFilename": {
             "mame": "mame.txt",
             "nes": "Nintendo - Nintendo Entertainment System.txt",
-            "saturn": "Sega - Saturn.txt"
+            "saturn": "Sega - Saturn.txt",
+            "pcengine": "NEC - PC Engine CD - TurboGrafx-CD.txt"
         },
         "skipWord": "ZZZ"
     },
