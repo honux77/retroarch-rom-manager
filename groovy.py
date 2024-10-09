@@ -8,10 +8,9 @@ def readCsv():
     from os import path
     import fileUtil
     config = Config()
+    groovy = config.getServerInfo('groovy')
     
-    with open(path.join(config.getGroovyListPath(),
-                        config.getGroovyListFilename(fileUtil.getCurrentRomDirName())),
-                        'r', encoding='utf-8') as f:
+    with open(path.join(groovy['localListPath'], groovy['listFilename'][fileUtil.getCurrentRomDirName()]), 'r', encoding='utf-8') as f:
         import csv
         reader = csv.reader(f, delimiter=';')
         groovyData = []
@@ -24,6 +23,7 @@ def readCsv():
 def exportGroovyList(dryRun=False):
     '''
     현재 xml 파일을 읽어서 MAME 게임 리스트 형식으로 변환 저장한다.
+    return: (matchCount, total)
     '''
     from os import path
 
@@ -31,6 +31,7 @@ def exportGroovyList(dryRun=False):
     import fileUtil
     
     config = Config()
+    groovy = config.getServerInfo('groovy')
     xmlManager = XmlManager()
     xmlManager.readGamesFromXml()
     header, groovyData = readCsv()
@@ -58,12 +59,9 @@ def exportGroovyList(dryRun=False):
             print(f'파일명: {filename} **일치하는 타이틀 없음**')    
     
     if not dryRun:
-
-        skipword = config.getGroovySkipWord()
-        # write to file
-        with open(path.join(config.getGroovyListPath(),
-                        config.getGroovyListFilename(fileUtil.getCurrentRomDirName())),
-                        'w', encoding='utf-8') as f:
+        skipword = config.getServerInfo('groovy')['skipWord']
+        # write to file        
+        with open(path.join(groovy['localListPath'], groovy['listFilename'][fileUtil.getCurrentRomDirName()]), 'w', encoding='utf-8') as f:            
             import csv
             writer = csv.writer(f, delimiter=';')
             writer.writerow(header)

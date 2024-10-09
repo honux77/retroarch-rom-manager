@@ -64,12 +64,18 @@ def findSimilarImage(romPath, imgDir):
     '''
     
     import fuzzywuzzy.process as fuzzProcess
+    from os import path
     title = getFileNameWithoutExt(romPath)
     # title에서 ()안의 내용을 제거한다.
     title = re.sub(r'\([^)]*\)', '', title)
     # title에서 []안의 내용을 제거한다.
     title = re.sub(r'\[[^)]*\]', '', title)
     print(title)
+
+    #디렉토리 존재 유무 체크
+    if not path.exists(imgDir):
+        return ["이미지 폴더가 존재하지 않음"]
+    
     allImages = [f for f in os.listdir(imgDir) if path.isfile(path.join(imgDir, f))]        
     if len(allImages) == 0:
         return ["이미지 폴더가 비었음"]

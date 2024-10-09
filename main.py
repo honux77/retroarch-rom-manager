@@ -64,7 +64,7 @@ def subRomDirBoxHandler(event):
         readRom = False
         
     fileUtil.changeSubRomDir(romDir)
-    xmlListManager = xmlUtil.XmlManager()
+    xmlListManager = xmlUtil.XmlManager()    
     xmlListManager.readGamesFromXml()    
 
     if xmlListManager.tree == None:
@@ -183,7 +183,18 @@ def exportGroovyList():
     그루비용 리스트를 내보내는 핸들러
     '''
     import groovy
-    groovy.exportGroovyList()
+    from syncFile import SyncFile
+    syncFile = SyncFile()
+    syncFile.setServerInfo("groovy")
+    status = syncFile.connectSSH()
+    if not status:
+        mBox.showerror("SSH 연결 실패", "SSH 연결에 실패했습니다. 설정을 확인해 주세요.")
+        return
+    syncFile.copyRemoteList()
+    match, total = groovy.exportGroovyList()    
+    syncFile.exportLocalList()
+    # 성공 메시지 출력
+    mBox.showinfo("그루비 리스트 내보내기", f"그루비 리스트 {match}개를 변환해서 {syncFile.remotePath}로 내보냈습니다.\n")
     
 
 ########################

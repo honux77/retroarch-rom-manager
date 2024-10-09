@@ -115,24 +115,6 @@ class Config:
             return None
         return self.secret['DEFAULT']['DeepLApiKey']    
     
-    def getGroovyListPath(self):
-        '''
-        Groovy 리스트 파일 경로를 반환한다.
-        '''
-        return self.configJson['groovy']['listPath']
-
-    def getGroovyListFilename(self, subRomDir):
-        '''
-        Groovy 리스트 파일명을 반환한다.
-        '''
-        return self.configJson['groovy']['listFilename'][subRomDir]
-    
-    def getGroovySkipWord(self):
-        '''
-        Groovy 리스트에서 제외할 단어를 반환한다.
-        '''
-        return self.configJson['groovy']['skipWord']
-    
     def getScrapperSkipWord(self):
         '''
         스크래퍼에서 제외할 단어를 반환한다.
