@@ -26,13 +26,26 @@
         "pcengine": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
         "pcenginecd": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll"
     },
-    "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",
-    "groovyListPath": "D:\\Retropie\\romlists",    
-    "groovyListFilename": {
-        "mame": "mame.txt",
-        "nes": "Nintendo - Nintendo Entertainment System.txt",
-        "saturn": "Sega - Saturn.txt"
+    "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",    
+    "scrapperSkipWord": "(PC)",    
+    "groovy": {
+        "serverInfo": {
+            "address": "groovyarcade",
+            "user": "arcade",
+            "password": "hodo1209"
+        },        
+        "remoteListPath": "/home/arcade/shared/frontends/attract/romlists",
+        "localListPath": "D:\\Retropie\\romlists",
+        "listFilename": {
+            "mame": "mame.txt",
+            "nes": "Nintendo - Nintendo Entertainment System.txt",
+            "saturn": "Sega - Saturn.txt"
+        },
+        "skipWord": "ZZZ"
     },
-    "groovySkipWord": "ZZZ",
-    "scrapperSkipWord": "(PC)"
+    "lakka": {
+        "address": "lakka",
+        "user": "root",
+        "password": "lakka"
+    }             
 }
