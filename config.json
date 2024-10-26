@@ -5,7 +5,9 @@
         "chd",
         "dsk",
         "fds",
-        "cue"
+        "cue",
+        "HDF",
+        "xdf"
     ],
     "xmlName": "gamelist.xml",
     "scrapperXmlName": "game.xml",
@@ -24,7 +26,12 @@
         "nes": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
         "fds": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
         "pcengine": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
-        "pcenginecd": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll"
+        "pcenginecd": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
+        "saturn": "C:\\RetroArch-Win64\\cores\\mednafen_saturn_libretro.dll",
+        "megadrive": "C:\\RetroArch-Win64\\cores\\genesis_plus_gx_libretro.dll",
+        "x68000": "C:\\RetroArch-Win64\\cores\\px68k_libretro.dll",
+        "pc98": "C:\\RetroArch-Win64\\cores\\np2kai_libretro.dll"
+
     },
     "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",    
     "scrapperSkipWord": "(PC)",    
@@ -37,10 +44,14 @@
         "remoteListPath": "/home/arcade/shared/frontends/attract/romlists",
         "localListPath": "D:\\Retropie\\romlists",
         "listFilename": {
-            "mame": "mame.txt",
+            "mame": "MAME.txt",
             "nes": "Nintendo - Nintendo Entertainment System.txt",
             "saturn": "Sega - Saturn.txt",
-            "pcengine": "NEC - PC Engine CD - TurboGrafx-CD.txt"
+            "pcengine": "NEC - PC Engine.txt",
+            "pcenginecd": "NEC - PC Engine CD.txt",
+            "megadrive": "Sega - Mega Drive - Genesis.txt",
+            "x68000": "Sharp - X68000.txt",
+            "pc98": "NEC - PC-98.txt"
         },
         "skipWord": "ZZZ"
     },

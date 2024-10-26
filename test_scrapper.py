@@ -8,7 +8,7 @@ class TestScrapper:
         import fileUtil
 
         config = config.Config()
-        SUBDIR = 'mame'        
+        SUBDIR = 'anux'        
         fileUtil.changeSubRomDir(SUBDIR)
 
         from xmlUtil import XmlManager

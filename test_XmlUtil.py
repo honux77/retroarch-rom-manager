@@ -32,7 +32,7 @@ class TestXmlUtil:
         assert self.xmlManager.size() == 0
     
     def test_loadXml(self):
-        self.xmlManager.clear()
+        self.xmlManager.clear()        
         assert self.xmlManager.xmlRoot == None          
         self.xmlManager.readGamesFromXml()
         assert self.xmlManager.xmlRoot != None

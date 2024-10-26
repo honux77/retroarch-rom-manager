@@ -123,6 +123,14 @@ class XmlManager:
 
                 print("Image 경로 수정: {} {}".format(gameNode.find('name').text, gameNode.find('image').text))
                 update = True
+
+            # images 경로가 ./box 로 시작하는 경우 ./media/images로 수정한다.            
+            if gameNode.find('image').text[:5] == './box':
+                gameNode.find('image').text = './media/images' + gameNode.find('image').text[5:]
+                gameNode.find('image').tail = '\n\t\t'
+
+                print("Image 경로 수정: {} {}".format(gameNode.find('name').text, gameNode.find('image').text))
+                update = True
             
             # rating이 없는 경우 추가
             if gameNode.find('rating') is None:
@@ -144,13 +152,18 @@ class XmlManager:
                 update = True
 
             romPath = gameNode.find('path').text
-            self.gameMap[romPath] = {             
+
+            # 중복목록은 스킵한다.            
+            if romPath not in self.gameMap:                
+                self.gameMap[romPath] = {             
                     'name': gameNode.find('name').text,
                     'path': gameNode.find('path').text,
                     'image': gameNode.find('image').text,
                     'rating': gameNode.find('rating').text,
                     'desc': gameNode.find('desc').text,
                 }            
+            else:
+                print("중복된 롬 파일 발견: ", romPath, gameNode.find('name').text)
 
         # 서브롬 디렉토리의 파일들을 읽고 gameList에 추가한다.        
         append = self._addGameInSubRomDirectory()

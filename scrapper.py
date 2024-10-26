@@ -14,7 +14,10 @@ def updateXMLFromScrapper(dryRun=True):
 
     scrapGames =_importFromSkraperXmlFile()
     gameList = XmlManager.gameList
-    skipWord = config.getScrapperSkipWord()    
+    
+    # 스크래퍼 스킵워드를 가져온다.
+    # 일반 스킵워드와는 다름 주의!
+    skipWord = config.getScrapperSkipWord()       
     if scrapGames is None:
         return 0,0
     
@@ -27,10 +30,12 @@ def updateXMLFromScrapper(dryRun=True):
         if game['path'] in scrapGames:
             scrapGame = scrapGames[game['path']]
             
-            # 한글 이름이 아니고 다른 내용이 있을 경우 업데이트한다.
-                    # game['name'] 이 skipword로 시작하면 업데이트하지 않는다.
+            # game['name']이 존재하고 skipword로 시작하면 업데이트하지 않는다.
             if game['name'] != None and game['name'].startswith(skipWord):
-                print(f"제목 변경 스킵: {game['name']}")
+                print(f"스킵 워드 포함 제목 변경 스킵: {game['name']}")
+                skipCount += 1
+            elif not game['name'].isascii():
+                print(f"한글 제목 변경 스킵: {game['name']}")
                 skipCount += 1
                 
             elif game['name'].isascii() and game['name'] != scrapGame['name']:
@@ -48,7 +53,7 @@ def updateXMLFromScrapper(dryRun=True):
             if update:
                 updateCount += 1
                 print("Update game: ", game['path'], end=' ')
-                print(XmlManager.updateGame(oldpath, game, dryRun=True))
+                XmlManager.updateGame(oldpath, game, dryRun=True)
     
     if updateCount > 0:
         if not dryRun:

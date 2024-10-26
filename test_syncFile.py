@@ -10,7 +10,7 @@ class TestSyncFile:
         self.syncFile = SyncFile()
 
         host = "groovy"
-        subrom = "saturn"
+        subrom = "gb"
         fileUtil.changeSubRomDir(subrom)
         
         self.syncFile.setServerInfo(host)
