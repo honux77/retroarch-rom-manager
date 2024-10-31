@@ -1,4 +1,5 @@
 {
+    "version": "241030",
     "basePath": "D:\\Retropie\\roms",
     "extension": [
         "zip",
@@ -30,7 +31,8 @@
         "saturn": "C:\\RetroArch-Win64\\cores\\mednafen_saturn_libretro.dll",
         "megadrive": "C:\\RetroArch-Win64\\cores\\genesis_plus_gx_libretro.dll",
         "x68000": "C:\\RetroArch-Win64\\cores\\px68k_libretro.dll",
-        "pc98": "C:\\RetroArch-Win64\\cores\\np2kai_libretro.dll"
+        "pc98": "C:\\RetroArch-Win64\\cores\\np2kai_libretro.dll",
+        "mastersystem": "C:\\RetroArch-Win64\\cores\\smsplus_libretro.dll"
 
     },
     "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",    
@@ -51,7 +53,7 @@
             "pcenginecd": "NEC - PC Engine CD.txt",
             "megadrive": "Sega - Mega Drive - Genesis.txt",
             "x68000": "Sharp - X68000.txt",
-            "pc98": "NEC - PC-98.txt"
+            "pc98": "NEC - PC-98.txt"            
         },
         "skipWord": "ZZZ"
     },
