@@ -1,7 +1,7 @@
 {
     "version": "241030",
     "basePath": "D:\\Retropie\\roms",
-    "extension": [
+    "extensions": [
         "zip",
         "chd",
         "dsk",
@@ -53,7 +53,9 @@
             "pcenginecd": "NEC - PC Engine CD.txt",
             "megadrive": "Sega - Mega Drive - Genesis.txt",
             "x68000": "Sharp - X68000.txt",
-            "pc98": "NEC - PC-98.txt"            
+            "pc98": "NEC - PC-98.txt",
+            "gb": "Nintendo - Game Boy.txt",
+            "snes": "Nintendo - Super Nintendo Entertainment System.txt"             
         },
         "skipWord": "ZZZ"
     },

@@ -224,7 +224,7 @@ class XmlManager:
         from fileUtil import getExtension
         from fileUtil import getFileNameWithoutExt
         
-        romFiles = [f for f in os.listdir() if path.isfile(f) and getExtension(f) in cfg.getExtension()]
+        romFiles = [f for f in os.listdir() if path.isfile(f) and getExtension(f) in cfg.getExtensions()]
         
         append = 0
         for romFile in romFiles:

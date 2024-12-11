@@ -195,6 +195,41 @@ def exportGroovyList():
     syncFile.exportLocalList()
     # 성공 메시지 출력
     mBox.showinfo("그루비 리스트 내보내기", f"그루비 리스트 {match}개를 변환해서 {syncFile.remotePath}로 내보냈습니다.\n")
+
+def exportRomsToGroovy():
+    '''
+    그루비용 리스트를 내보내는 핸들러
+    '''
+    import groovy
+    from syncFile import SyncFile
+    syncFile = SyncFile()
+    syncFile.setServerInfo("groovy")
+    status = syncFile.connectSSH()
+    if not status:
+        mBox.showerror("SSH 연결 실패", "SSH 연결에 실패했습니다. 설정을 확인해 주세요.")
+        return
+    
+    # 작은 상태창 생성
+    statusWindow = tk.Toplevel()
+    statusWindow.title("그루비 동기화")
+    statusWindow.geometry("300x100")
+    
+    # 상태 메시지 라벨
+    statusLabel = ttk.Label(statusWindow, text="그루비 서버에 접속중...")
+    statusLabel.pack(pady=20)
+
+    # 프로그레스 바 추가
+    progressBar = ttk.Progressbar(statusWindow, length=200, mode='determinate')
+    progressBar.pack(pady=10)
+    progressBar['value'] = 0
+    
+    # 상태창 업데이트
+    statusWindow.update()
+    
+    # match, total = syncFile.syncSubRoms(lastSubRomDir)
+    # 성공 메시지 출력
+    mBox.showinfo("그루비 리스트 내보내기", f" {lastSubRomDir} 폴더의 롬 {match}개를 {syncFile.remotePath}로 내보냈습니다.\n")
+
     
 
 ########################
@@ -409,6 +444,9 @@ fileDeleteButton.grid(column=0, row=4, pady=5, padx=5)
 fileDeleteButton = ttk.Button(buttonFrame, text="그루비용 리스트 내보내기", command=exportGroovyList)
 fileDeleteButton.grid(column=0, row=5, pady=5, padx=5)
 
+# 그루비로 롬 동기화 버튼
+groovySyncButton = ttk.Button(buttonFrame, text="그루비와 롬 동기화", command=exportRomsToGroovy)
+groovySyncButton.grid(column=0, row=6, pady=5, padx=5)
 
 
 def setBasePath():

@@ -61,11 +61,11 @@ class Config:
         '''
         self.configJson['targetPath'] = targetPath
 
-    def getExtension(self):
+    def getExtensions(self):
         '''
         확장자를 반환한다.
         '''
-        return self.configJson['extension']   
+        return self.configJson['extensions']   
     
 
     def getScrapperXmlName(self):
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     cfg = Config()
     print("Base Path: ", cfg.getBasePath())
     print("Target Path: ", cfg.getTargetPath())
-    print("Extension: ", cfg.getExtension())
+    print("Extension: ", cfg.getExtensions())
     print("Xml Name: ", cfg.getXmlName())
     print("Scrapper Xml Name: ", cfg.getScrapperXmlName())
     print("Retroarch Path: ", cfg.getRetroarchPath())

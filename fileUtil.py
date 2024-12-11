@@ -16,7 +16,7 @@ def getRomCount():
     '''
     현재 작업 디렉토리의 롬 개수를 반환한다.
     '''
-    return len([f for f in os.listdir() if path.isfile(f) and getExtension(f) in config.getExtension()])
+    return len([f for f in os.listdir() if path.isfile(f) and getExtension(f) in config.getExtensions()])
 
 def getCurrentRomDirName():
     '''
