@@ -102,8 +102,7 @@ class SyncFile:
                 # 로컬 폴더의 모든 롬 파일 목록
                 local_files = []
                 for root, dirs, files in os.walk(fileUtil.getCurrentRomDirName()):
-                    for file in files:
-                        if file
+                    for file in files:                         
                         local_files.append(os.path.join(root, file))
 
                 total = len(local_files)
@@ -111,7 +110,7 @@ class SyncFile:
 
                 # 각 파일 업로드
                 for local_file in local_files:
-                    config.getExtensions()
+                    extentions = config.getExtensions()
                     if not progress_window.winfo_exists():
                         break
                         

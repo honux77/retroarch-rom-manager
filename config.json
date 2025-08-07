@@ -48,13 +48,16 @@
         "listFilename": {
             "mame": "MAME.txt",
             "nes": "Nintendo - Nintendo Entertainment System.txt",
+            "fds": "Nintendo - Family Computer Disk System.txt",
             "saturn": "Sega - Saturn.txt",
             "pcengine": "NEC - PC Engine.txt",
-            "pcenginecd": "NEC - PC Engine CD.txt",
+            "pcenginecd": "NEC - PC Engine CD - TurboGrafx-CD.txt",
             "megadrive": "Sega - Mega Drive - Genesis.txt",
             "x68000": "Sharp - X68000.txt",
             "pc98": "NEC - PC-98.txt",
             "gb": "Nintendo - Game Boy.txt",
+            "gbc": "Nintendo - Game Boy Color.txt",
+            "gba": "Nintendo - Game Boy Advance.txt",
             "snes": "Nintendo - Super Nintendo Entertainment System.txt"             
         },
         "skipWord": "ZZZ"
