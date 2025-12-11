@@ -20,9 +20,13 @@ import xmlUtil
 import fileUtil 
 import config
 import lastStatus
+import mainFunc
+
 
 # load config
 config = config.Config()
+
+mainFunc.initMainProgram(config)
 
 # load lastStatus
 status = lastStatus.LastStatus()

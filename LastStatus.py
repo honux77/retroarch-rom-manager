@@ -2,7 +2,7 @@ import json
 import os
 from os import path
 
-from decorator import singleton
+from singleton import singleton
 
 
 @singleton

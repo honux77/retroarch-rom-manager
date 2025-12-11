@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from os import path
 
 from config import Config
-from decorator import singleton
+from singleton import singleton
 
 cfg = Config()
 

@@ -8,7 +8,8 @@
         "fds",
         "cue",
         "HDF",
-        "xdf"
+        "xdf",
+        "7z"
     ],
     "xmlName": "gamelist.xml",
     "scrapperXmlName": "game.xml",
@@ -58,7 +59,8 @@
             "gb": "Nintendo - Game Boy.txt",
             "gbc": "Nintendo - Game Boy Color.txt",
             "gba": "Nintendo - Game Boy Advance.txt",
-            "snes": "Nintendo - Super Nintendo Entertainment System.txt"             
+            "snes": "Nintendo - Super Nintendo Entertainment System.txt",
+            "fbneo": "FBNeo - Arcade Games.txt"             
         },
         "skipWord": "ZZZ"
     },
