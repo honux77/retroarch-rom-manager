@@ -65,6 +65,9 @@ def exportGroovyList(dryRun=False):
             import csv
             writer = csv.writer(f, delimiter=';')
             writer.writerow(header)
+
+            # sort groovyData by title
+            groovyData.sort(key=lambda x: x[1])
             for row in groovyData:                
                 if row[1].startswith(skipword):
                     continue
