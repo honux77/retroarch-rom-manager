@@ -45,6 +45,8 @@
             "password": "hodo1209"
         },        
         "remoteListPath": "/home/arcade/shared/frontends/attract/romlists",
+        "remoteRomPath": "/home/arcade/shared/roms",
+        "remoteImagePath": "/home/arcade/shared/roms/[SUB]/media/images",
         "localListPath": "D:\\Retropie\\romlists",
         "listFilename": {
             "mame": "MAME.txt",

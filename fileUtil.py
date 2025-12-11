@@ -21,7 +21,7 @@ def getRomCount():
 def getCurrentRomDirName():
     '''
     현재 작업 디렉토리로부터 마지막 폴더 이름을 반환한다.
-    ex) C:\roms\gb -> gb
+    ex) C:\\roms\\gb -> gb
     '''
     import pathlib
     return pathlib.Path().absolute().name
@@ -124,6 +124,18 @@ def deleteRomAndImages(game):
         msg += "이미지 삭제 실패"
         return msg
     return romPath + " 삭제 성공"
+
+
+def cleanRomFolder():
+    '''롬 폴더 하위의 media/manual 폴더 안의 파일을 삭제하고 폴더도 삭제'''
+    import shutil
+    romBasePath = config.getBasePath()
+    for subDir in os.listdir(romBasePath):
+        manualPath = os.path.join(romBasePath, subDir, 'media', 'manual')
+        if os.path.exists(manualPath):
+            print(f"Removing manual folder: {manualPath}")
+            shutil.rmtree(manualPath)
+
 
 # main function for test
 if __name__ == "__main__":

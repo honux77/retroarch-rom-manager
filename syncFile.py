@@ -14,16 +14,16 @@ class SyncFile:
         
         config = Config()
         subRomDir = fileUtil.getCurrentRomDirName()
-        server = config.getServerInfo(serverName)
-        serverInfo = server['serverInfo']
+        self.server = config.getServerInfo(serverName)
+        serverInfo = self.server['serverInfo']
         self.address = serverInfo['address']
         self.user = serverInfo['user']
         self.password = serverInfo['password']        
         
-        listfilename = server['listFilename'][subRomDir]
-        self.localPath = path.join(server['localListPath'], listfilename)
+        listfilename = self.server['listFilename'][subRomDir]
+        self.localPath = path.join(self.server['localListPath'], listfilename)
         # linux에서는 /로 경로를 구분해서 path.join을 사용하면 안된다.
-        self.remotePath = server['remoteListPath'] +"/" + listfilename
+        self.remotePath = self.server['remoteListPath'] +"/" + listfilename
         print(f"설정 파일에서 {subRomDir} 롬 폴더에 대한 리스트 파일 정보를 찾을 수 없습니다.")            
         
         
@@ -33,6 +33,7 @@ class SyncFile:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(self.address, username=self.user, password=self.password)        
         print("SSH 접속 성공: ", self.address)
+        self.connected = True
         return True
     
     def disconnectSSH(self):        
@@ -72,75 +73,107 @@ class SyncFile:
             sftp.close()
         return (self.localPath, self.remotePath)
     
-    # match, total = syncFile.syncSubRoms()    
-    def syncSubRoms(self):
-        import tkinter as tk
-        from tkinter import ttk
+
+    def syncSubRoms(self, subRomDir, status_window, status_label, progress_bar):
+        '''
+        지정된 서브 롬 폴더의 롬 파일들을 SSH로 동기화한다.
+        return: (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, totalLocalRomCount, totalLocalImageCount)
+        '''
+
+        from config import Config
+        config = Config()
+
+
+        #시작전 manual 폴더 삭제
+        import fileUtil
+        fileUtil.cleanRomFolder()
+
+        if not self.connected:
+            print("SSH에 연결되어 있지 않습니다.")
+            return -1,-1
+
+        # 서브롬 폴더와 서버의 ~/shared/<subRomDir> 폴더를 비교하고 동기화한다.
+        # 1. 로컬 폴더 목록 읽기, 하위 폴더와 파일도 모두 포함한다.
         import os
-        import threading
+        from os import path
+        localBasePath = path.join(config.getBasePath(), subRomDir)
+        localImagePath = path.join(localBasePath, 'media', 'images')
+        localFileList = os.listdir(localBasePath)
+        localImageList = os.listdir(localImagePath)
 
-        # 진행 상태 창 생성
-        progress_window = tk.Toplevel()
-        progress_window.title("롬 동기화")
-        progress_window.geometry("300x150")
+        sftp = self.ssh.open_sftp()
+        sftp.chdir(self.server['remoteRomPath'] + '/' + subRomDir)
+        remoteFileList = sftp.listdir()
 
-        # 진행 상태 라벨
-        status_label = ttk.Label(progress_window, text="동기화 중...")
-        status_label.pack(pady=10)
+        # 원격에만 있는 파일 조회 후 제거
+        removeRomCount = 0
+        for remoteFile in remoteFileList:
+            if remoteFile not in localFileList:
+                #원격에만 있는 파일이 디렉토리라면 스킵
+                try:
+                    fileAttr = sftp.stat(remoteFile)
+                    if fileAttr.st_mode & 0o40000: #디렉토리인 경우
+                        continue
+                except IOError:
+                    continue
 
-        # 진행바 
-        progress_bar = ttk.Progressbar(progress_window, length=200, mode='determinate')
-        progress_bar.pack(pady=10)
-
-        def sync_thread():
-            import fileUtil
-            from config import Config
-            config = Config()
-
-            sftp = self.ssh.open_sftp()
-            try:
-                # 로컬 폴더의 모든 롬 파일 목록
-                local_files = []
-                for root, dirs, files in os.walk(fileUtil.getCurrentRomDirName()):
-                    for file in files:                         
-                        local_files.append(os.path.join(root, file))
-
-                total = len(local_files)
-                uploaded = 0
-
-                # 각 파일 업로드
-                for local_file in local_files:
-                    extentions = config.getExtensions()
-                    if not progress_window.winfo_exists():
-                        break
-                        
-                    remote_path = self.remotePath + "/" + os.path.basename(local_file)
-                    status_label.config(text=f"업로드 중: {os.path.basename(local_file)}")
-                    
-                    try:
-                        sftp.put(local_file, remote_path)
-                        uploaded += 1
-                        progress = (uploaded / total) * 100
-                        progress_bar['value'] = progress
-                        progress_window.update()
-                    except:
-                        print(f"업로드 실패: {local_file}")
-
-                if progress_window.winfo_exists():
-                    progress_window.destroy()
-                return uploaded, total
-
-            finally:
-                sftp.close()
-
-        # 동기화 스레드 시작
-        sync_thread = threading.Thread(target=sync_thread)
-        sync_thread.start()
-
-        # 창이 닫힐 때까지 대기
-        progress_window.wait_window()
+                print(f'원격에서 제거: {remoteFile}')
+                sftp.remove(remoteFile)
+                removeRomCount += 1
         
-        return 0, 0  # 취소된 경우 0,0 반환
+        print(f'원격에서 제거된 파일 수: {removeRomCount}')
+        
+        # 로컬에만 있는 파일 조회 후 업로드
+        uploadRomCount = 0       
+        totalRomCount = 0 
+        for localFile in localFileList:
+            totalRomCount += 1
+            if localFile not in remoteFileList:
+                #로컬에만 있는 파일
+                localFilePath = path.join(localBasePath, localFile)
+                sftp.put(localFilePath, localFile)
+                print(f'원격에 업로드: {localFile}')
+                uploadRomCount += 1
+            #진행 상태 업데이트
+            progress = int((totalRomCount / (len(localFileList) + len(localImageList))) * 100)
+            status_label.config(text=f'{subRomDir} 롬 동기화 중... {progress}% 완료')
+            progress_bar['value'] = progress
+            status_window.update_idletasks()
+
+        print(f'원격에 업로드된 파일 수: {uploadRomCount}')
+
+        # 원격에만 있는 이미지 파일 조회 후 제거
+        removeImageCount = 0
+        sftp.chdir(self.server['remoteImagePath'].replace('[SUB]', subRomDir))  
+        remoteImageList = sftp.listdir()
+        for remoteImage in remoteImageList:
+            if remoteImage not in localImageList:
+                print(f'원격에서 제거: {remoteImage}')
+                sftp.remove(remoteImage)
+                removeImageCount += 1
+        
+        print(f'원격에서 제거된 이미지 파일 수: {removeImageCount}')
+
+        # 원격에만 있는 이미지 파일 조회 후 업로드
+        uploadImageCount = 0
+        totalImageCount = 0
+        for localImage in localImageList:
+            totalImageCount += 1
+            if localImage not in remoteImageList:
+                #로컬에만 있는 이미지 파일
+                localImageFilePath = path.join(localImagePath, localImage)
+                sftp.put(localImageFilePath, localImage)
+                print(f'원격에 업로드: {localImage}')
+                uploadImageCount += 1
+            
+            #진행 상태 업데이트
+            progress = int(((totalRomCount + totalImageCount) / (len(localFileList) + len(localImageList))) * 100)
+            status_label.config(text=f'{subRomDir} 이미지 동기화 중... {progress}% 완료')
+            progress_bar['value'] = progress
+
+        return (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, len(localFileList), len(localImageList))
+           
+       
 
         
         

@@ -5,19 +5,8 @@ import os
 
 def initMainProgram(cfg):
     '''메인 윈도우 시작시 실행되는 초기화 루틴'''
-    cleanRomFolder(cfg)
-
-
-def cleanRomFolder(cfg):
-    '''롬 폴더 하위의 media/manual 폴더 안의 파일을 삭제하고 폴더도 삭제'''
-    import shutil
-    romBasePath = cfg.getBasePath()
-    for subDir in os.listdir(romBasePath):
-        manualPath = os.path.join(romBasePath, subDir, 'media', 'manual')
-        if os.path.exists(manualPath):
-            print(f"Removing manual folder: {manualPath}")
-            shutil.rmtree(manualPath)
-
+    import fileUtil
+    fileUtil.cleanRomFolder()
 
 
 async def runRetroarch(subRomDir, romPath, cfg):

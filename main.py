@@ -38,7 +38,7 @@ programPath = os.getcwd()
 
 # Create instance
 root = tk.Tk()
-root.title("RetroArch Rom Manager v20241009")
+root.title("RetroArch Rom Manager v20251211")
 root.geometry("1200x800")
 
 # 현재 디렉토리의 리소스 디렉토리에서 아이콘과 기본 이미지를 읽어온다.
@@ -202,21 +202,21 @@ def exportGroovyList():
 
 def exportRomsToGroovy():
     '''
-    그루비용 리스트를 내보내는 핸들러
+    현재 폴더의 롬 파일과 이미지를 서버와 동기화하는 핸들러
     '''
     import groovy
     from syncFile import SyncFile
     syncFile = SyncFile()
     syncFile.setServerInfo("groovy")
-    status = syncFile.connectSSH()
-    if not status:
-        mBox.showerror("SSH 연결 실패", "SSH 연결에 실패했습니다. 설정을 확인해 주세요.")
-        return
     
     # 작은 상태창 생성
     statusWindow = tk.Toplevel()
     statusWindow.title("그루비 동기화")
     statusWindow.geometry("300x100")
+    # 상태창 위치를 메인 윈도우 중앙으로 설정
+    x = root.winfo_x() + (root.winfo_width() // 2) - 150
+    y = root.winfo_y() + (root.winfo_height() // 2) - 50
+    statusWindow.geometry(f"+{x}+{y}")  
     
     # 상태 메시지 라벨
     statusLabel = ttk.Label(statusWindow, text="그루비 서버에 접속중...")
@@ -229,10 +229,33 @@ def exportRomsToGroovy():
     
     # 상태창 업데이트
     statusWindow.update()
+
+    status = syncFile.connectSSH()
+    if not status:
+        # 상태창 닫기
+        statusWindow.destroy()
+        mBox.showerror("SSH 연결 실패", "SSH 연결에 실패했습니다. 설정을 확인해 주세요.")
+        return
     
-    # match, total = syncFile.syncSubRoms(lastSubRomDir)
+    statusLabel.config(text="그루비 서버에 접속 성공.")    
+    statusWindow.update()
+    # 0.5 초 정도 슬립?
+    import time
+    time.sleep(1)
+    
+    statusLabel.config(text=f"그루비와 {lastSubRomDir} 동기화 중...")
+    
+    # match = 100
+    syncStatus = syncFile.syncSubRoms(lastSubRomDir, statusWindow, statusLabel, progressBar)
+    
     # 성공 메시지 출력
-    mBox.showinfo("그루비 리스트 내보내기", f" {lastSubRomDir} 폴더의 롬 {match}개를 {syncFile.remotePath}로 내보냈습니다.\n")
+    # 상태창 닫기
+    statusLabel.config(text="동기화 완료!")
+    progressBar['value'] = 100
+    statusWindow.update()
+    time.sleep(1)
+    statusWindow.destroy()    
+    mBox.showinfo("그루비 리스트 내보내기", f" {lastSubRomDir} 폴더의 롬 {syncStatus[2]}개를 복사했습니다.\n")
 
     
 

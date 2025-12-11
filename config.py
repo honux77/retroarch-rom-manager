@@ -7,7 +7,7 @@ from singleton import singleton
 @singleton
 class Config:
     '''
-    환경 설정을 담당하는 클래스
+    환경 설정을 담당하는 싱글톤 클래스
     환결 설정은 config.json 파일에 저장된다.
     '''
 
