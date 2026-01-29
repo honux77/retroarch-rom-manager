@@ -1,0 +1,76 @@
+{
+    "version": "241030",
+    "basePath": "D:\\Retropie\\roms",
+    "extensions": [
+        "zip",
+        "chd",
+        "dsk",
+        "fds",
+        "cue",
+        "HDF",
+        "xdf",
+        "7z"
+    ],
+    "xmlName": "gamelist.xml",
+    "scrapperXmlName": "game.xml",
+    "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
+    "retroarchConfigPath": "C:\\RetroArch-Win64\\retroarch.cfg",
+    "cores": {
+        "anux": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
+        "gb": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
+        "gbc": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
+        "gba": "C:\\RetroArch-Win64\\cores\\gpsp_libretro.dll",
+        "snes": "C:\\RetroArch-Win64\\cores\\bsnes2014_balanced_libretro.dll",
+        "wswan": "C:\\RetroArch-Win64\\cores\\swanstation_libretro.dll",
+        "msx1": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
+        "msx2": "C:\\RetroArch-Win64\\cores\\bluemsx_libretro.dll",
+        "fbneo": "C:\\RetroArch-Win64\\cores\\fbneo_libretro.dll",
+        "mame": "C:\\RetroArch-Win64\\cores\\mame_libretro.dll",
+        "nes": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
+        "fds": "C:\\RetroArch-Win64\\cores\\fceumm_libretro.dll",
+        "pcengine": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
+        "pcenginecd": "C:\\RetroArch-Win64\\cores\\mednafen_pce_fast_libretro.dll",
+        "saturn": "C:\\RetroArch-Win64\\cores\\mednafen_saturn_libretro.dll",
+        "megadrive": "C:\\RetroArch-Win64\\cores\\genesis_plus_gx_libretro.dll",
+        "x68000": "C:\\RetroArch-Win64\\cores\\px68k_libretro.dll",
+        "pc98": "C:\\RetroArch-Win64\\cores\\np2kai_libretro.dll",
+        "mastersystem": "C:\\RetroArch-Win64\\cores\\smsplus_libretro.dll"
+
+    },
+    "scrapperPath": "C:\\games\\Skraper-1.1.1\\SkraperUI.exe",    
+    "scrapperSkipWord": "(PC)",    
+    "groovy": {
+        "serverInfo": {
+            "address": "groovyarcade",
+            "user": "arcade",
+            "password": "hodo1209"
+        },        
+        "remoteListPath": "/home/arcade/shared/frontends/attract/romlists",
+        "remoteRomPath": "/home/arcade/shared/roms",
+        "remoteImagePath": "/home/arcade/shared/roms/[SUB]/media/images",
+        "localListPath": "D:\\Retropie\\romlists",
+        "listFilename": {
+            "mame": "MAME.txt",
+            "nes": "Nintendo - Nintendo Entertainment System.txt",
+            "fds": "Nintendo - Family Computer Disk System.txt",
+            "saturn": "Sega - Saturn.txt",
+            "pcengine": "NEC - PC Engine.txt",
+            "pcenginecd": "NEC - PC Engine CD - TurboGrafx-CD.txt",
+            "megadrive": "Sega - Mega Drive - Genesis.txt",
+            "x68000": "Sharp - X68000.txt",
+            "pc98": "NEC - PC-98.txt",
+            "gb": "Nintendo - Game Boy.txt",
+            "gbc": "Nintendo - Game Boy Color.txt",
+            "gba": "Nintendo - Game Boy Advance.txt",
+            "snes": "Nintendo - Super Nintendo Entertainment System.txt",
+            "fbneo": "FBNeo - Arcade Games.txt",
+            "n64": "Nintendo - Nintendo 64.txt"             
+        },
+        "skipWord": "ZZZ"
+    },
+    "lakka": {
+        "address": "lakka",
+        "user": "root",
+        "password": "lakka"
+    }             
+}

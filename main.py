@@ -1,121 +1,80 @@
-# simple gui apllication
+# main.py
+# RetroArch Rom Manager - PySide6 GUI Frontend
 
-import tkinter as tk
-from tkinter import ttk
-from tkinter import scrolledtext
-from tkinter import Menu
-from tkinter import messagebox as mBox
-
-from PIL import ImageTk, Image
-
-# Create instance
-win = tk.Tk()
-
-# Add a title
-win.title("Famliy Pocket Rom Manager")
-
-# roms 폴더의 서브 폴더들을 읽어서 드롭리스트에 추가
 import os
-from os import path
-subdirs = [f for f in os.listdir('roms/') if path.isdir(path.join('roms/', f))]
+import sys
 
-# Set size of window
-win.geometry("1024x768")
+from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 
-# event handler for select_button
-def listSelectedDir(event):
-    dir = romBox.get()
-    import fileUtil
-    romList = fileUtil.getRomList(dir)
-    
-    # get image list and cut extension
-    imgNameList = [path.splitext(f)[0] for f in fileUtil.getImgList(dir)]
-    
-    # add romList to romListBox
-    romListBox.delete(0, tk.END)    
-
-    #delete noImageTextBox
-    noImageTextBox.delete(1.0, tk.END)
-
-    for rom in romList:
-        romName = path.splitext(rom)[0]
-        romListBox.insert(tk.END, rom)                    
-        
-        if romName not in imgNameList:
-            romListBox.itemconfig(tk.END, {'bg':'red'})
-            noImageTextBox.insert(tk.INSERT, rom + "\n")
-                        
-    # set default value to first item
-    romListBox.select_set(0)
-    romListBox.event_generate("<<ListboxSelect>>")
-    # show romListBox
-
-# simple function for printing debug message
-def debug(msg):
-    debugLabel.configure(text=msg)
-
-# event handler for romListBox
-def romListBoxSelectHandler(event):
-    romFile = romListBox.get(romListBox.curselection())
-    import imgUtil
-    imageTk = imgUtil.findImageFromRomName(romBox.get(), romFile)
-    if (imageTk != None):        
-        imgLabel.configure(image=imageTk)
-        imgLabel.image = imageTk
-        imgInfoLabel.configure(text="{}: {} X {}".format(romFile, imageTk.width(), imageTk.height()))
-    else:
-        imgLabel.configure(image=baseImageTk)
-        imgInfoLabel.configure(text="Image Not Found") 
+# Local modules
+import config as config_module
+import lastStatus
+import mainHandler
+import fileUtil
+import theme
 
 
-# 라벨들
-label = ttk.Label(win, text="롬 폴더")
-label.grid(column=0, row=0, pady=5, padx=5)
+def main():
+    # Load config
+    app_config = config_module.Config()
+    mainHandler.initMainProgram(app_config)
 
-label2 = ttk.Label(win, text="불러온 롬 리스트")
-label2.grid(column=0, row=2, pady=5, padx=5)
+    # Load last status
+    status = lastStatus.LastStatus()
 
-label3 = ttk.Label(win, text="이미지가 없는 롬들")
-label3.grid(column=2, row=2, pady=5, padx=5)
+    # Store program path before changing directory
+    program_path = os.getcwd()
 
-label4 = ttk.Label(win, text="이미지 미리 보기")
-label4.grid(column=0, row=4, pady=5, padx=5)
+    # Change working directory
+    fileUtil.changeRootDir()
 
-#load base Image
-baseImageTk = ImageTk.PhotoImage(Image.open("images/base.png"))
+    # Create Qt application
+    app = QApplication(sys.argv)
+    app.setApplicationName("RetroArch Rom Manager")
 
-imgLabel = ttk.Label(win, image=baseImageTk)
-imgLabel.grid(column=0, row=5, pady=5, padx=5)
+    # Apply theme
+    theme.apply_theme(app)
 
-imgInfoLabel = ttk.Label(win, text="Image Info")
-imgInfoLabel.grid(column=2, row=5, pady=5, padx=5)
+    # Import MainWindow after app creation
+    from ui.main_window import MainWindow
 
-# debug label
-debugLabel = ttk.Label(win, text="debug")
-debugLabel.grid(column=0, row=6, pady=5, padx=5)
+    # Create main window
+    window = MainWindow(app_config, status)
+    window.program_path = program_path
 
-# 폴더 선택 콤보 박스
-romBox = ttk.Combobox(win, values=subdirs)
-#set default value to first item
-romBox.current(0)
-romBox.grid(column=0, row=1, padx=5, pady=5)
-romBox.bind("<<ComboboxSelected>>", listSelectedDir)
+    # Read sub directories
+    base_path = app_config.getBasePath()
+    sub_dirs = fileUtil.readSubDirs()
 
-# 롬 리스트용 리스트 박스
-from tkinter import Listbox
-romListBox = Listbox(win)
-romListBox.config(height=20, width= 50)
-romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
-romListBox.grid(column=0, row=3, padx=5, pady=5)
+    # Handle case when no sub ROM folders exist
+    while len(sub_dirs) == 0:
+        from ui.dialogs import show_error, get_directory
+
+        show_error(None, "서브 롬 폴더 없음",
+                   "기본 폴더에 서브 롬 폴더가 없습니다. 기본 폴더를 다시 선택해 주세요.")
+
+        base_path = get_directory(None, "기본 폴더 선택", app_config.getBasePath())
+        if not base_path:
+            sys.exit(1)
+
+        os.chdir(base_path)
+        sub_dirs = fileUtil.readSubDirs()
+
+        # Update config
+        app_config.setBasePath(base_path)
+
+    # Initialize ROM folders and show window
+    window.init_rom_folders(sub_dirs)
+    window.show()
+
+    # Trigger initial ROM list load
+    if window.sub_rom_dir_combo.currentText():
+        window._on_rom_dir_changed(window.sub_rom_dir_combo.currentText())
+
+    # Run application
+    sys.exit(app.exec())
 
 
-# 이미지가 없는 롬 목록 출력용
-from tkinter import Text
-noImageTextBox = Text(win)
-noImageTextBox.config(height=20, width= 50)
-noImageTextBox.grid(column=2, row=3, padx=5, pady=5)
-
-romBox.event_generate("<<ComboboxSelected>>")
-
-# 애플리케이션을 실행합니다.
-win.mainloop()
+if __name__ == "__main__":
+    main()

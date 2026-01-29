@@ -1,27 +1,85 @@
+'''
+파일 관련 유틸리티 함수들
+'''
 
-romExt = {
-    "fc":".nes" ,
-    "gb":".gb" ,
-    "gbc":".gbc" ,
-    "md":".md" ,
-    "cps1":".cps",
-    "sms":".sms" ,
-}
+import os
+from os import path
+import re
+import tkinter as tk
+from tkinter import messagebox as mBox
 
-def getRomList(dirName):
-    import os
+from config import Config
+config = Config()
+
+
+def getRomCount():
+    '''
+    현재 작업 디렉토리의 롬 개수를 반환한다.
+    '''
+    return len([f for f in os.listdir() if path.isfile(f) and getExtension(f) in config.getExtensions()])
+
+def getCurrentRomDirName():
+    '''
+    현재 작업 디렉토리로부터 마지막 폴더 이름을 반환한다.
+    ex) C:\\roms\\gb -> gb
+    '''
+    import pathlib
+    return pathlib.Path().absolute().name
+
+
+def getFileNameWithoutExt(f):
+    '''
+    파일의 확장자를 제외한 이름을 반환한다.
+    '''
+    return path.splitext(f)[0]
+
+def getExtension(f):
+    '''
+    파일의 확장자를 반환한다.
+    '''
+    return path.splitext(f)[1][1:]
+
+def changeRootDir():
+    os.chdir(config.getBasePath())
+
+def changeSubRomDir(subPath):
+    os.chdir(path.join(config.getBasePath(), subPath))
+
+def readSubDirs():        
+    '''
+    roms 폴더의 하위 폴더를 읽어서 정렬된 리스트로 반환한다.
+    바이오스 폴더는 제외한다.    
+    '''
+    romDir = [f for f in os.listdir() if path.isdir(f) and f != 'bios']
+    romDir.sort()
+    return romDir
+
+def findSimilarImage(romPath, imgDir):
+    
+    '''
+    romName과 가장 유사한 이미지 이름을 찾아서 반환한다.
+    romDir: roms 폴더의 하위 폴더
+    romName: 롬 이름
+    imgDir: rom 폴더 하위의 images 폴더
+    '''
+    
+    import fuzzywuzzy.process as fuzzProcess
     from os import path
-    dir = path.join('roms/', dirName)
-    roms = [f for f in os.listdir(dir) if f.endswith(romExt[dirName])]    
-    return roms
+    title = getFileNameWithoutExt(romPath)
+    # title에서 ()안의 내용을 제거한다.
+    title = re.sub(r'\([^)]*\)', '', title)
+    # title에서 []안의 내용을 제거한다.
+    title = re.sub(r'\[[^)]*\]', '', title)
+    print(title)
 
-
-def getImgList(dirName):
-    import os
-    from os import path
-    dir = path.join('images/', dirName)
-    imgs = [f for f in os.listdir(dir) if f.endswith('.png')]
-    return imgs
+    #디렉토리 존재 유무 체크
+    if not path.exists(imgDir):
+        return ["이미지 폴더가 존재하지 않음"]
+    
+    allImages = [f for f in os.listdir(imgDir) if path.isfile(path.join(imgDir, f))]        
+    if len(allImages) == 0:
+        return ["이미지 폴더가 비었음"]
+    return fuzzProcess.extractOne(title, allImages)    
 
 def imageDelete(imgPath, romPath):
     import os
@@ -47,7 +105,40 @@ def printRomInfo(imgPath, romPath):
         if f not in imgs:
             print("Image not exists: ", f)
 
+def deleteRomAndImages(game):
+    msg = ""
+    romPath = game['path']
+    imagePath = game['image']
+    result = mBox.askquestion("삭제", "{}\n {}\n 선택된 롬과 이미지를 삭제하시겠습니까?".format(romPath, imagePath))
+
+    if result == 'no':
+        return "삭제 취소"
+    
+    try:
+        os.remove(romPath)
+    except:
+        msg += "롬 삭제 실패"
+    try:
+        os.remove(imagePath)    
+    except:
+        msg += "이미지 삭제 실패"
+        return msg
+    return romPath + " 삭제 성공"
+
+
+def cleanRomFolder():
+    '''롬 폴더 하위의 media/manual 폴더 안의 파일을 삭제하고 폴더도 삭제'''
+    import shutil
+    romBasePath = config.getBasePath()
+    for subDir in os.listdir(romBasePath):
+        manualPath = os.path.join(romBasePath, subDir, 'media', 'manual')
+        if os.path.exists(manualPath):
+            print(f"Removing manual folder: {manualPath}")
+            shutil.rmtree(manualPath)
+
+
 # main function for test
 if __name__ == "__main__":
-    print("Test getRomList")
-    print(getRomList('fc'))
+    os.chdir(ROM_PATH)
+    print("Test for Similar Image")
+    print(findSimilarImage('gb', "Super Mario world", "box"))

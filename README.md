@@ -1,1 +1,5 @@
-# FC Pocket ROM Manager v 0.1
+# RetroArch Rom Manayger v.0.0.2
+
+## TODO 
+
+- [[TODO.md]] 참고
