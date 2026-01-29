@@ -74,15 +74,25 @@ class SyncFile:
         return (self.localPath, self.remotePath)
     
 
-    def syncSubRoms(self, subRomDir, status_window, status_label, progress_bar):
+    def syncSubRoms(self, subRomDir, status_window=None, status_label=None, progress_bar=None, callback=None):
         '''
         지정된 서브 롬 폴더의 롬 파일들을 SSH로 동기화한다.
+        callback: optional function(current, total) for progress updates
         return: (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, totalLocalRomCount, totalLocalImageCount)
         '''
 
         from config import Config
         config = Config()
 
+        def update_progress(current, total, message=""):
+            """Update progress using callback or Tkinter widgets."""
+            if callback:
+                callback(current, total)
+            elif status_window and status_label and progress_bar:
+                progress = int((current / total) * 100) if total > 0 else 0
+                status_label.config(text=message or f'동기화 중... {progress}% 완료')
+                progress_bar['value'] = progress
+                status_window.update_idletasks()
 
         #시작전 manual 폴더 삭제
         import fileUtil
@@ -100,6 +110,8 @@ class SyncFile:
         localImagePath = path.join(localBasePath, 'media', 'images')
         localFileList = os.listdir(localBasePath)
         localImageList = os.listdir(localImagePath)
+
+        total_files = len(localFileList) + len(localImageList)
 
         sftp = self.ssh.open_sftp()
         sftp.chdir(self.server['remoteRomPath'] + '/' + subRomDir)
@@ -120,12 +132,12 @@ class SyncFile:
                 print(f'원격에서 제거: {remoteFile}')
                 sftp.remove(remoteFile)
                 removeRomCount += 1
-        
+
         print(f'원격에서 제거된 파일 수: {removeRomCount}')
-        
+
         # 로컬에만 있는 파일 조회 후 업로드
-        uploadRomCount = 0       
-        totalRomCount = 0 
+        uploadRomCount = 0
+        totalRomCount = 0
         for localFile in localFileList:
             totalRomCount += 1
             if localFile not in remoteFileList:
@@ -135,23 +147,20 @@ class SyncFile:
                 print(f'원격에 업로드: {localFile}')
                 uploadRomCount += 1
             #진행 상태 업데이트
-            progress = int((totalRomCount / (len(localFileList) + len(localImageList))) * 100)
-            status_label.config(text=f'{subRomDir} 롬 동기화 중... {progress}% 완료')
-            progress_bar['value'] = progress
-            status_window.update_idletasks()
+            update_progress(totalRomCount, total_files, f'{subRomDir} 롬 동기화 중...')
 
         print(f'원격에 업로드된 파일 수: {uploadRomCount}')
 
         # 원격에만 있는 이미지 파일 조회 후 제거
         removeImageCount = 0
-        sftp.chdir(self.server['remoteImagePath'].replace('[SUB]', subRomDir))  
+        sftp.chdir(self.server['remoteImagePath'].replace('[SUB]', subRomDir))
         remoteImageList = sftp.listdir()
         for remoteImage in remoteImageList:
             if remoteImage not in localImageList:
                 print(f'원격에서 제거: {remoteImage}')
                 sftp.remove(remoteImage)
                 removeImageCount += 1
-        
+
         print(f'원격에서 제거된 이미지 파일 수: {removeImageCount}')
 
         # 원격에만 있는 이미지 파일 조회 후 업로드
@@ -165,11 +174,9 @@ class SyncFile:
                 sftp.put(localImageFilePath, localImage)
                 print(f'원격에 업로드: {localImage}')
                 uploadImageCount += 1
-            
+
             #진행 상태 업데이트
-            progress = int(((totalRomCount + totalImageCount) / (len(localFileList) + len(localImageList))) * 100)
-            status_label.config(text=f'{subRomDir} 이미지 동기화 중... {progress}% 완료')
-            progress_bar['value'] = progress
+            update_progress(totalRomCount + totalImageCount, total_files, f'{subRomDir} 이미지 동기화 중...')
 
         return (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, len(localFileList), len(localImageList))
            
