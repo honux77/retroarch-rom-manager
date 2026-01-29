@@ -14,16 +14,33 @@ def translateGameInfo(game: dict):
 
 def translateText(text, config):
     url = "https://api-free.deepl.com/v2/translate"
+
+    api_key = config.getDeepLApiKey()
+    if api_key is None:
+        print("DeepL API 키가 설정되지 않았습니다. secret.ini 파일을 확인하세요.")
+        return text
+
+    # 2025년 11월부터 헤더 기반 인증 필수
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Authorization": f"DeepL-Auth-Key {api_key}",
+        "Content-Type": "application/json"
     }
     data = {
-        "auth_key": config.getDeepLApiKey(),
-        "text": text,
+        "text": [text],
         "source_lang": "EN",
         "target_lang": "KO"
     }
-    
-    response = requests.post(url, headers=headers, data=data)
-    translated_text = response.json()["translations"][0]["text"]
-    return translated_text
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response_json = response.json()
+
+        if "translations" in response_json:
+            translated_text = response_json["translations"][0]["text"]
+            return translated_text
+        else:
+            print(f"DeepL API 오류: {response_json}")
+            return text
+    except Exception as e:
+        print(f"번역 중 오류 발생: {e}")
+        return text

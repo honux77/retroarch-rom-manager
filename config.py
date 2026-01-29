@@ -86,6 +86,12 @@ class Config:
         '''
         return self.configJson['retroarchPath']   
     
+    def getRetroarchConfigPath(self):
+        '''
+        retroarch config 경로를 반환한다.
+        '''
+        return self.configJson['retroarchConfigPath']
+    
     def getCoreLibaryName(self, subRomDir):
         '''
         core libary 이름을 반환한다.
@@ -102,8 +108,10 @@ class Config:
         '''ini 파일에서 secret 정보를 읽어온다.'''
         import configparser
         self.secret = configparser.ConfigParser()
-        if path.exists('secret.ini'):
-            self.secret.read('secret.ini')
+        # 절대 경로로 secret.ini 파일 경로 지정 (작업 디렉토리 변경에 영향받지 않도록)
+        secretIniPath = path.join(path.dirname(self.jsonFileName), 'secret.ini')
+        if path.exists(secretIniPath):
+            self.secret.read(secretIniPath)
         else:
             self.secret = None
     
