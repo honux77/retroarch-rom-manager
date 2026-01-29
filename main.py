@@ -17,16 +17,17 @@ import translate
 
 # local module
 import xmlUtil
-import fileUtil 
+import fileUtil
 import config
 import lastStatus
-import mainFunc
+import mainHandler
+import retroTheme
 
 
 # load config
 config = config.Config()
 
-mainFunc.initMainProgram(config)
+mainHandler.initMainProgram(config)
 
 # load lastStatus
 status = lastStatus.LastStatus()
@@ -40,6 +41,10 @@ programPath = os.getcwd()
 root = tk.Tk()
 root.title("RetroArch Rom Manager v20251211")
 root.geometry("1200x800")
+
+# 슈퍼마리오 스타일 테마 적용
+style = ttk.Style()
+retroTheme.apply_mario_theme(root, style)
 
 # 현재 디렉토리의 리소스 디렉토리에서 아이콘과 기본 이미지를 읽어온다.
 baseImage = Image.open("./resources/base.png")
@@ -142,14 +147,10 @@ def romListBoxSelectHandler(event):
     if len(imagePath) > 20:
         imagePath = imagePath[:20] + "..."
 
-    if (imageTk != None):        
+    if (imageTk != None):
         imgLabel.configure(image=imageTk)
-        imgLabel.image = imageTk        
+        imgLabel.image = imageTk
     else:
-        print(f"{imagePath} 이미지가 없습니다. 가장 유사한 이미지를 찾습니다.")
-        ret = fileUtil.findSimilarImage(game['path'], path.dirname(game['image']))
-        msgTextBox.insert(tk.INSERT, f"\n유사한 이미지: {ret[0]}\n")
-
         imgLabel.configure(image=baseImageTk, width=500)    
 
     # 롬의 세부 정보를 보여준다.
@@ -216,8 +217,9 @@ def exportRomsToGroovy():
     # 상태창 위치를 메인 윈도우 중앙으로 설정
     x = root.winfo_x() + (root.winfo_width() // 2) - 150
     y = root.winfo_y() + (root.winfo_height() // 2) - 50
-    statusWindow.geometry(f"+{x}+{y}")  
-    
+    statusWindow.geometry(f"+{x}+{y}")
+    retroTheme.apply_toplevel_style(statusWindow)
+
     # 상태 메시지 라벨
     statusLabel = ttk.Label(statusWindow, text="그루비 서버에 접속중...")
     statusLabel.pack(pady=20)
@@ -263,39 +265,53 @@ def exportRomsToGroovy():
 # 중첩 프레임          #
 ########################
 
-# 타이틀 프레임
-# 롬 선택 콤보 박스와 새로고침 버튼이 있는 프레임
+# 그리드 설정 - 열과 행의 비율 조정
+root.grid_columnconfigure(0, weight=1)
+root.grid_columnconfigure(1, weight=2)
+root.grid_columnconfigure(2, weight=0)
+root.grid_rowconfigure(1, weight=1)
+root.grid_rowconfigure(2, weight=1)
+
+# 타이틀 프레임 (상단 전체)
 titleFrame = ttk.Frame(root)
-titleFrame.grid(column=1, row=0, pady=5, padx=5)
+titleFrame.grid(column=0, row=0, columnspan=3, pady=10, padx=10, sticky='ew')
 
-# 롬 리스트 프레임
+# 롬 리스트 프레임 (좌측 상단)
 romListFrame = ttk.Frame(root)
-romListFrame.grid(column=0, row=1, pady=5, padx=5)
+romListFrame.grid(column=0, row=1, pady=5, padx=10, sticky='nsew')
 
-# 롬 세부 정보 프레임
-detailedRomInfoFrame = ttk.Frame(root)
-detailedRomInfoFrame.grid(column=1, row=1, pady=5, padx=5)
-
-# 메시지용 프레임
-outputMessageFrame = ttk.Frame(root)
-outputMessageFrame.grid(column=0, row=2, pady=5, padx=5)
-
-# 이미지 미리보기 프레임
+# 이미지 미리보기 프레임 (중앙 상단)
 imagePreviewFrame = ttk.Frame(root)
-imagePreviewFrame.grid(column=1, row=2, pady=5, padx=5)
+imagePreviewFrame.grid(column=1, row=1, pady=5, padx=5, sticky='n')
 
-# 기본 버튼 프레임
+# 기본 버튼 프레임 (우측 상단)
 buttonFrame = ttk.Frame(root)
-buttonFrame.grid(column=2, row=1, pady=5, padx=5)
+buttonFrame.grid(column=2, row=1, pady=5, padx=10, sticky='n')
 
-# 설정 버튼 프레임, 테두리를 그린다.
+# 메시지용 프레임 (좌측 하단)
+outputMessageFrame = ttk.Frame(root)
+outputMessageFrame.grid(column=0, row=2, pady=5, padx=10, sticky='nsew')
+
+# 롬 세부 정보 프레임 (중앙 하단)
+detailedRomInfoFrame = ttk.Frame(root)
+detailedRomInfoFrame.grid(column=1, row=2, pady=5, padx=5, sticky='nsew')
+
+# 설정 버튼 프레임 (우측 하단)
 settingFrame = ttk.Frame(root)
-settingFrame.grid(column=2, row=2, pady=5, padx=5)
+settingFrame.grid(column=2, row=2, pady=5, padx=10, sticky='n')
 
+
+# 타이틀 프레임 중앙 정렬
+titleFrame.grid_columnconfigure(0, weight=1)
+titleFrame.grid_columnconfigure(4, weight=1)
+
+# 앱 타이틀
+appTitle = ttk.Label(titleFrame, text="RetroArch Rom Manager", style='Title.TLabel')
+appTitle.grid(column=1, row=0, columnspan=3, pady=(0, 10))
 
 # 롬 폴더 선택 프레임
-label = ttk.Label(titleFrame, text="롬 폴더")
-label.grid(column=0, row=0, pady=5, padx=5)
+label = ttk.Label(titleFrame, text="롬 폴더:")
+label.grid(column=1, row=1, pady=5, padx=5, sticky='e')
 
 # 서브 롬 폴더 콤보 박스
 basePath = config.getBasePath()
@@ -315,58 +331,59 @@ while len(subDirs) == 0:
     # 설정 업데이트
     config.setBasePath(basePath)    
 
-subRomDirBox = ttk.Combobox(titleFrame, values=subDirs)
+subRomDirBox = ttk.Combobox(titleFrame, values=subDirs, width=30)
 
-
-subRomDirBox.grid(column=1, row=0, padx=5, pady=5)
+subRomDirBox.grid(column=2, row=1, padx=5, pady=5)
 subRomDirBox.bind("<<ComboboxSelected>>", subRomDirBoxHandler)
 
-# 새로고침 버튼 
+# 새로고침 버튼
 refreshButton = ttk.Button(titleFrame, text="새로고침", command=lambda: subRomDirBox.event_generate("<<ComboboxSelected>>"))
-refreshButton.grid(column=2, row=0, pady=5, padx=5)
+refreshButton.grid(column=3, row=1, pady=5, padx=5)
 
 # 롬 리스트
 label2 = ttk.Label(romListFrame, text="롬 리스트")
-label2.grid(column=0, row=0, pady=5, padx=5)
+label2.grid(column=0, row=0, pady=5, padx=5, sticky='w')
 from tkinter import Listbox
 romListBox = Listbox(romListFrame)
-romListBox.config(height=18, width= 60)
+romListBox.config(height=20, width=45)
+retroTheme.apply_listbox_style(romListBox)
 romListBox.bind('<<ListboxSelect>>', romListBoxSelectHandler)
-romListBox.grid(column=0, row=1, padx=5, pady=5)
+romListBox.grid(column=0, row=1, padx=5, pady=5, sticky='nsew')
 
 # 롬 세부 정보
 romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="롬 세부 정보")
-romDescriptionLabel.grid(column=0, row=0, pady=5, padx=5)
+romDescriptionLabel.grid(column=0, row=0, pady=5, padx=5, sticky='w', columnspan=4)
 
 # 롬 제목
 romTitleLabel = ttk.Label(detailedRomInfoFrame, text="롬 이름")
-romTitleLabel.grid(column=0, row=1, pady=5, padx=5)
-romTitleEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romTitleEntry.grid(column=1, row=1, pady=5, padx=5, columnspan= 2) 
+romTitleLabel.grid(column=0, row=1, pady=2, padx=5, sticky='e')
+romTitleEntry = ttk.Entry(detailedRomInfoFrame, width=45)
+romTitleEntry.grid(column=1, row=1, pady=2, padx=5, columnspan=3, sticky='w')
 
 # 롬 경로
 romPathLabel = ttk.Label(detailedRomInfoFrame, text="롬 경로")
-romPathLabel.grid(column=0, row=2, pady=5, padx=5)
-romPathEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romPathEntry.grid(column=1, row=2, pady=5, padx=5, columnspan= 2)
-
-# Rating
-romRatingLabel = ttk.Label(detailedRomInfoFrame, text="Rating")
-romRatingLabel.grid(column=0, row=3, pady=5, padx=5)
-romRatingEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romRatingEntry.grid(column=1, row=3, pady=5, padx=5, columnspan= 2)
+romPathLabel.grid(column=0, row=2, pady=2, padx=5, sticky='e')
+romPathEntry = ttk.Entry(detailedRomInfoFrame, width=45)
+romPathEntry.grid(column=1, row=2, pady=2, padx=5, columnspan=3, sticky='w')
 
 # 이미지 경로
 romImageLabel = ttk.Label(detailedRomInfoFrame, text="이미지 경로")
-romImageLabel.grid(column=0, row=4, pady=5, padx=5)
-romImageEntry = ttk.Entry(detailedRomInfoFrame, width=60)
-romImageEntry.grid(column=1, row=4, pady=5, padx=5, columnspan= 2)
+romImageLabel.grid(column=0, row=3, pady=2, padx=5, sticky='e')
+romImageEntry = ttk.Entry(detailedRomInfoFrame, width=45)
+romImageEntry.grid(column=1, row=3, pady=2, padx=5, columnspan=3, sticky='w')
+
+# Rating
+romRatingLabel = ttk.Label(detailedRomInfoFrame, text="Rating")
+romRatingLabel.grid(column=0, row=4, pady=2, padx=5, sticky='e')
+romRatingEntry = ttk.Entry(detailedRomInfoFrame, width=45)
+romRatingEntry.grid(column=1, row=4, pady=2, padx=5, columnspan=3, sticky='w')
 
 # 세부 정보
-romDescriptionLabel = ttk.Label(detailedRomInfoFrame, text="세부 정보")
-romDescriptionLabel.grid(column=0, row=5, pady=5, padx=5)
-romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=60, height=10)
-romDescriptionText.grid(column=1, row=5, columnspan= 2, pady=5, padx=5)
+romDescLabel2 = ttk.Label(detailedRomInfoFrame, text="세부 정보")
+romDescLabel2.grid(column=0, row=5, pady=2, padx=5, sticky='ne')
+romDescriptionText = scrolledtext.ScrolledText(detailedRomInfoFrame, width=45, height=5)
+retroTheme.apply_text_style(romDescriptionText)
+romDescriptionText.grid(column=1, row=5, columnspan=3, pady=2, padx=5, sticky='w')
 
 # 롬 정보 업데이트 버튼
 def updateRomInfoHandler():
@@ -398,8 +415,8 @@ def updateRomInfoHandler():
         print("인덱스 업데이트:", lastRomIdx)
         subRomDirBox.event_generate("<<ComboboxSelected>>")
 
-romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler)
-romUpdateButton.grid(column=1, row=6, pady=5, padx=5)
+romUpdateButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 업데이트", command=updateRomInfoHandler, style='Blue.TButton')
+romUpdateButton.grid(column=1, row=6, pady=8, padx=5, sticky='e')
 
 def translateGameInfoHandler():
     global lastRomIdx, romTable
@@ -416,17 +433,18 @@ def translateGameInfoHandler():
     print("인덱스 업데이트:", lastRomIdx)
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
-translateGameInfoButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 번역하기", command=translateGameInfoHandler)
-translateGameInfoButton.grid(column=2, row=6, pady=5, padx=5)
+translateGameInfoButton = ttk.Button(detailedRomInfoFrame, text="롬 정보 번역하기", command=translateGameInfoHandler, style='Yellow.TButton')
+translateGameInfoButton.grid(column=2, row=6, pady=8, padx=5, columnspan=2, sticky='w')
 
 
 # 출력 메시지
 label3 = ttk.Label(outputMessageFrame, text="출력 메시지")
-label3.grid(column=0, row=0, pady=5, padx=5)
+label3.grid(column=0, row=0, pady=5, padx=5, sticky='w')
 # 메시지 출력용 텍스트 박스
 msgTextBox = Text(outputMessageFrame)
-msgTextBox.config(height=20, width= 60)
-msgTextBox.grid(column=0, row=1, padx=5, pady=5)
+msgTextBox.config(height=15, width=45)
+retroTheme.apply_text_style(msgTextBox)
+msgTextBox.grid(column=0, row=1, padx=5, pady=5, sticky='nsew')
 
 
 # 이미지 미리보기 라벨
@@ -437,14 +455,21 @@ imgLabel.grid(column=0, row=1, pady=5, padx=5)
 # buttons                             #
 #######################################
 
+# 버튼 공통 너비
+BTN_WIDTH = 20
+
+# 기본 동작 라벨
+actionLabel = ttk.Label(buttonFrame, text="기본 동작")
+actionLabel.grid(column=0, row=0, pady=(0, 5), padx=5, sticky='w')
+
 # 선택 롬 실행 버튼
-import mainFunc
+import mainHandler
 import asyncio
 
-runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", 
-                          command=lambda: asyncio.run(mainFunc.runRetroarch(subRomDirBox.get(), xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['path'],config)))
-
-runRomButton.grid(column=0, row=0, pady=5, padx=5)
+runRomButton = ttk.Button(buttonFrame, text="선택 롬 실행", width=BTN_WIDTH,
+                          command=lambda: asyncio.run(mainHandler.runRetroarch(subRomDirBox.get(), xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['path'],config)),
+                          style='Green.TButton')
+runRomButton.grid(column=0, row=1, pady=3, padx=5, sticky='ew')
 
 def openFolderHandler(folderPath):
     '''
@@ -456,24 +481,36 @@ def openFolderHandler(folderPath):
         mBox.showerror("폴더 없음", folderPath + " 가 없습니다. 폴더를 확인해 주세요.")
 
 # 롬 폴더 열기 버튼
-romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", command=lambda: openFolderHandler(os.getcwd()))
-romFolderOpenButton.grid(column=0, row=2, pady=5, padx=5)
+romFolderOpenButton = ttk.Button(buttonFrame, text="롬 폴더 열기", width=BTN_WIDTH,
+                                  command=lambda: openFolderHandler(os.getcwd()))
+romFolderOpenButton.grid(column=0, row=2, pady=3, padx=5, sticky='ew')
 
 # 이미지 폴더 열기 버튼
-imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", command=lambda: openFolderHandler(path.join(os.getcwd(), path.dirname(xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['image']))))
-imgFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
+imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", width=BTN_WIDTH,
+                                  command=lambda: openFolderHandler(path.join(os.getcwd(), path.dirname(xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['image']))))
+imgFolderOpenButton.grid(column=0, row=3, pady=3, padx=5, sticky='ew')
 
 # 롬 파일 및 이미지 삭제 버튼
-fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", command=deleteRomAndImageHandler)
-fileDeleteButton.grid(column=0, row=4, pady=5, padx=5)
+fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", width=BTN_WIDTH,
+                               command=deleteRomAndImageHandler, style='Danger.TButton')
+fileDeleteButton.grid(column=0, row=4, pady=3, padx=5, sticky='ew')
+
+# 구분선
+ttk.Separator(buttonFrame, orient='horizontal').grid(column=0, row=5, pady=10, padx=5, sticky='ew')
+
+# 그루비 라벨
+groovyLabel = ttk.Label(buttonFrame, text="그루비 동기화")
+groovyLabel.grid(column=0, row=6, pady=(0, 5), padx=5, sticky='w')
 
 # 그루비 리스트 내보내기 버튼
-fileDeleteButton = ttk.Button(buttonFrame, text="그루비용 리스트 내보내기", command=exportGroovyList)
-fileDeleteButton.grid(column=0, row=5, pady=5, padx=5)
+groovyListButton = ttk.Button(buttonFrame, text="리스트 내보내기", width=BTN_WIDTH,
+                               command=exportGroovyList)
+groovyListButton.grid(column=0, row=7, pady=3, padx=5, sticky='ew')
 
 # 그루비로 롬 동기화 버튼
-groovySyncButton = ttk.Button(buttonFrame, text="그루비와 롬 동기화", command=exportRomsToGroovy)
-groovySyncButton.grid(column=0, row=6, pady=5, padx=5)
+groovySyncButton = ttk.Button(buttonFrame, text="롬 동기화", width=BTN_WIDTH,
+                               command=exportRomsToGroovy, style='Green.TButton')
+groovySyncButton.grid(column=0, row=8, pady=3, padx=5, sticky='ew')
 
 
 def setBasePath():
@@ -506,40 +543,48 @@ def setBasePathHandler():
     subRomDirBox.set(status.getLastSubRomDirectory())
     subRomDirBox.event_generate("<<ComboboxSelected>>")
 
-setBasePathButton = ttk.Button(settingFrame, text="기본 폴더 재설정", command=setBasePathHandler)
-setBasePathButton.grid(column=0, row=0, pady=5, padx=5)
+# 설정 라벨
+settingLabel = ttk.Label(settingFrame, text="설정")
+settingLabel.grid(column=0, row=0, pady=(0, 5), padx=5, sticky='w')
+
+setBasePathButton = ttk.Button(settingFrame, text="기본 폴더 재설정", width=BTN_WIDTH,
+                                command=setBasePathHandler)
+setBasePathButton.grid(column=0, row=1, pady=3, padx=5, sticky='ew')
 
 # 기기 폴더 재설정 버튼
 def setTargetPathHandler():
     '''
     기기 폴더를 재설정하는 핸들러
     '''
-    from tkinter import filedialog    
-    targetPath = filedialog.askdirectory(initialdir=config.getTargetPath())    
+    from tkinter import filedialog
+    targetPath = filedialog.askdirectory(initialdir=config.getTargetPath())
     config.setTargetPath(targetPath)
     config.save()
 
-setTargetPathButton = ttk.Button(settingFrame, text="기기 폴더 재설정", command=setTargetPathHandler)
-setTargetPathButton.grid(column=0, row=1, pady=5, padx=5)
+setTargetPathButton = ttk.Button(settingFrame, text="기기 폴더 재설정", width=BTN_WIDTH,
+                                  command=setTargetPathHandler)
+setTargetPathButton.grid(column=0, row=2, pady=3, padx=5, sticky='ew')
 
 # 마지막으로 선택된 폴더의 롬 리스트를 보여줌
-if  not status.getLastSubRomDirectory() in subRomDirBox['values']:
+if not status.getLastSubRomDirectory() in subRomDirBox['values']:
     status.setLastSubRomDirectory(subRomDirBox['values'][0])
 subRomDirBox.set(status.getLastSubRomDirectory())
 subRomDirBox.event_generate("<<ComboboxSelected>>")
 
 # 설정 파일 열기 버튼
-openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", command=lambda: os.startfile(config.getConfigFilePath()))
-openConfigButton.grid(column=0, row=2, pady=5, padx=5)
+openConfigButton = ttk.Button(settingFrame, text="설정 파일 열기", width=BTN_WIDTH,
+                               command=lambda: os.startfile(config.getConfigFilePath()))
+openConfigButton.grid(column=0, row=3, pady=3, padx=5, sticky='ew')
 
 # RetroArch 폴더 열기 버튼
-# 전체 경로에서 retroarch 폴더만 가져와서 열어준다.
-retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", command=lambda: openFolderHandler(path.dirname(config.getRetroarchPath())))
-retroarchFolderOpenButton.grid(column=0, row=3, pady=5, padx=5)
+retroarchFolderOpenButton = ttk.Button(settingFrame, text="RetroArch 폴더 열기", width=BTN_WIDTH,
+                                        command=lambda: openFolderHandler(path.dirname(config.getRetroarchPath())))
+retroarchFolderOpenButton.grid(column=0, row=4, pady=3, padx=5, sticky='ew')
 
 # Scrapper 실행 버튼
-runScrapperButton = ttk.Button(settingFrame, text="Scrapper 실행", command=lambda: asyncio.run(mainFunc.runScrapper(config)))
-runScrapperButton.grid(column=0, row=4, pady=5, padx=5)
+runScrapperButton = ttk.Button(settingFrame, text="Scrapper 실행", width=BTN_WIDTH,
+                                command=lambda: asyncio.run(mainHandler.runScrapper(config)), style='Green.TButton')
+runScrapperButton.grid(column=0, row=5, pady=3, padx=5, sticky='ew')
 
 
 # ScrapXML 삭제 버튼
@@ -555,9 +600,10 @@ def deleteFile(filePath):
     else:
         mBox.showinfo("ScrapXML 삭제", "ScrapXML 파일이 없습니다.")
 
-scraperXmlDeleteButton = ttk.Button(settingFrame, text="ScrapXML 삭제", 
-                                    command=lambda: deleteFile(config.getScrapperXmlName()))
-scraperXmlDeleteButton.grid(column=0, row=5, pady=5, padx=5)
+scraperXmlDeleteButton = ttk.Button(settingFrame, text="ScrapXML 삭제", width=BTN_WIDTH,
+                                    command=lambda: deleteFile(config.getScrapperXmlName()),
+                                    style='Danger.TButton')
+scraperXmlDeleteButton.grid(column=0, row=6, pady=3, padx=5, sticky='ew')
 
 # 종료시 설정을 저장한다.
 def onClosing():
