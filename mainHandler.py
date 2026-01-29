@@ -13,7 +13,7 @@ async def runRetroarch(subRomDir, romPath, cfg):
     '''Retroarch를 실행합니다.'''
     from os import path
     import subprocess
-    cmd = [cfg.getRetroarchPath(), '-L', cfg.getCoreLibaryName(subRomDir), romPath]        
+    cmd = [cfg.getRetroarchPath(), '--config', cfg.getRetroarchConfigPath(), '-L', cfg.getCoreLibaryName(subRomDir), romPath]        
     print("에뮬레이터를 실행합니다: ", cmd)
     subprocess.Popen(cmd)
 

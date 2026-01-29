@@ -259,7 +259,200 @@ def exportRomsToGroovy():
     statusWindow.destroy()    
     mBox.showinfo("그루비 리스트 내보내기", f" {lastSubRomDir} 폴더의 롬 {syncStatus[2]}개를 복사했습니다.\n")
 
-    
+
+def openImageScrapWindow():
+    '''
+    이미지 스크랩 서브 윈도우를 열어주는 핸들러
+    현재 선택된 게임의 이미지를 ScreenScraper API로 검색하고 다운로드
+    '''
+    global lastRomIdx, lastSubRomDir
+
+    import screenScraper
+    from screenScraper import ScreenScraperAPI, getSystemId
+
+    # 현재 선택된 게임 정보 가져오기
+    xmlManager = xmlUtil.XmlManager()
+    game = xmlManager.findGameByIdx(lastRomIdx)
+
+    # 서브 윈도우 생성
+    scrapWindow = tk.Toplevel()
+    scrapWindow.title("이미지 스크랩")
+    scrapWindow.geometry("600x500")
+    x = root.winfo_x() + (root.winfo_width() // 2) - 300
+    y = root.winfo_y() + (root.winfo_height() // 2) - 250
+    scrapWindow.geometry(f"+{x}+{y}")
+    retroTheme.apply_toplevel_style(scrapWindow)
+
+    # 메인 프레임
+    mainFrame = ttk.Frame(scrapWindow, padding=10)
+    mainFrame.pack(fill='both', expand=True)
+
+    # 게임 정보 표시
+    infoFrame = ttk.Frame(mainFrame)
+    infoFrame.pack(fill='x', pady=5)
+
+    ttk.Label(infoFrame, text="게임 이름:").grid(row=0, column=0, sticky='e', padx=5)
+    ttk.Label(infoFrame, text=game['name']).grid(row=0, column=1, sticky='w', padx=5)
+
+    ttk.Label(infoFrame, text="ROM 파일:").grid(row=1, column=0, sticky='e', padx=5)
+    ttk.Label(infoFrame, text=game['path']).grid(row=1, column=1, sticky='w', padx=5)
+
+    ttk.Label(infoFrame, text="시스템:").grid(row=2, column=0, sticky='e', padx=5)
+    systemId = getSystemId(lastSubRomDir)
+    ttk.Label(infoFrame, text=f"{lastSubRomDir} (ID: {systemId})").grid(row=2, column=1, sticky='w', padx=5)
+
+    # 구분선
+    ttk.Separator(mainFrame, orient='horizontal').pack(fill='x', pady=10)
+
+    # 상태 표시 영역
+    statusFrame = ttk.Frame(mainFrame)
+    statusFrame.pack(fill='both', expand=True, pady=5)
+
+    statusText = scrolledtext.ScrolledText(statusFrame, width=70, height=15)
+    retroTheme.apply_text_style(statusText)
+    statusText.pack(fill='both', expand=True)
+
+    # 이미지 미리보기 라벨
+    previewLabel = ttk.Label(mainFrame, text="이미지 미리보기")
+    previewLabel.pack(pady=5)
+
+    # 버튼 프레임
+    buttonFrame2 = ttk.Frame(mainFrame)
+    buttonFrame2.pack(fill='x', pady=10)
+
+    def logStatus(message):
+        statusText.insert(tk.END, message + "\n")
+        statusText.see(tk.END)
+        scrapWindow.update()
+
+    def doScrap():
+        """스크랩 실행"""
+        api = ScreenScraperAPI()
+
+        if not api.isConfigured():
+            logStatus("오류: ScreenScraper 계정이 설정되지 않았습니다.")
+            logStatus("secret.ini 파일에 다음 항목을 추가하세요:")
+            logStatus("  ScreenScraperID = 계정ID")
+            logStatus("  ScreenScraperPassword = 비밀번호")
+            return
+
+        if systemId is None:
+            logStatus(f"오류: '{lastSubRomDir}' 시스템의 ID를 찾을 수 없습니다.")
+            return
+
+        romFullPath = os.path.join(os.getcwd(), game['path'])
+        romName = os.path.basename(game['path'])
+
+        logStatus(f"검색 중: {romName}")
+        logStatus(f"시스템 ID: {systemId}")
+
+        # 게임 검색
+        gameData = api.searchGame(romFullPath, systemId, romName)
+
+        if gameData is None:
+            logStatus("게임을 찾을 수 없습니다.")
+            return
+
+        # 게임 정보 표시
+        gameInfo = api.getGameInfo(gameData, lang='ko')
+        logStatus(f"\n=== 검색 결과 ===")
+        logStatus(f"게임 이름: {gameInfo.get('name', 'N/A')}")
+        logStatus(f"개발사: {gameInfo.get('developer', 'N/A')}")
+        logStatus(f"퍼블리셔: {gameInfo.get('publisher', 'N/A')}")
+        logStatus(f"장르: {gameInfo.get('genre', 'N/A')}")
+        logStatus(f"출시일: {gameInfo.get('releasedate', 'N/A')}")
+
+        # 이미지 URL 추출
+        images = api.getGameImages(gameData)
+        logStatus(f"\n=== 사용 가능한 이미지 ===")
+        for imgType, url in images.items():
+            logStatus(f"  {imgType}: {url[:50]}...")
+
+        # 이미지 다운로드 (ss = 스크린샷)
+        if 'ss' in images:
+            # 저장 경로 설정
+            imageDir = os.path.dirname(game['image'])
+            if not imageDir:
+                imageDir = './media/images'
+            imageName = os.path.splitext(os.path.basename(game['path']))[0] + '.png'
+            savePath = os.path.join(os.getcwd(), imageDir, imageName)
+
+            logStatus(f"\n이미지 다운로드 중: {savePath}")
+
+            if api.downloadImage(images['ss'], savePath):
+                logStatus("이미지 다운로드 완료!")
+
+                # XML 업데이트
+                game['image'] = os.path.join(imageDir, imageName).replace('\\', '/')
+                xmlManager.updateGame(game['path'], game)
+                logStatus("XML 업데이트 완료!")
+            else:
+                logStatus("이미지 다운로드 실패")
+        else:
+            logStatus("\n스크린샷 이미지가 없습니다.")
+
+        # 박스 아트 다운로드
+        if 'box-2D' in images:
+            imageDir = os.path.dirname(game['image']) if game['image'] else './media/images'
+            boxName = os.path.splitext(os.path.basename(game['path']))[0] + '_box.png'
+            boxPath = os.path.join(os.getcwd(), imageDir, boxName)
+
+            logStatus(f"\n박스 아트 다운로드 중: {boxPath}")
+            if api.downloadImage(images['box-2D'], boxPath):
+                logStatus("박스 아트 다운로드 완료!")
+
+    def doScrapInfo():
+        """게임 정보만 스크랩 (이미지 제외)"""
+        api = ScreenScraperAPI()
+
+        if not api.isConfigured():
+            logStatus("오류: ScreenScraper 계정이 설정되지 않았습니다.")
+            return
+
+        if systemId is None:
+            logStatus(f"오류: '{lastSubRomDir}' 시스템의 ID를 찾을 수 없습니다.")
+            return
+
+        romFullPath = os.path.join(os.getcwd(), game['path'])
+        romName = os.path.basename(game['path'])
+
+        logStatus(f"게임 정보 검색 중: {romName}")
+
+        gameData = api.searchGame(romFullPath, systemId, romName)
+
+        if gameData is None:
+            logStatus("게임을 찾을 수 없습니다.")
+            return
+
+        gameInfo = api.getGameInfo(gameData, lang='ko')
+
+        logStatus(f"\n=== 게임 정보 ===")
+        logStatus(f"이름: {gameInfo.get('name', 'N/A')}")
+        logStatus(f"설명: {gameInfo.get('description', 'N/A')[:200]}...")
+        logStatus(f"개발사: {gameInfo.get('developer', 'N/A')}")
+        logStatus(f"퍼블리셔: {gameInfo.get('publisher', 'N/A')}")
+        logStatus(f"장르: {gameInfo.get('genre', 'N/A')}")
+
+        # 게임 정보 업데이트 확인
+        result = mBox.askquestion("정보 업데이트", "검색된 정보로 게임 정보를 업데이트하시겠습니까?")
+        if result == 'yes':
+            if gameInfo.get('name'):
+                game['name'] = gameInfo['name']
+            if gameInfo.get('description'):
+                game['desc'] = gameInfo['description']
+            xmlManager.updateGame(game['path'], game)
+            logStatus("\n게임 정보가 업데이트되었습니다!")
+
+    # 버튼들
+    scrapButton = ttk.Button(buttonFrame2, text="이미지 스크랩", command=doScrap, style='Green.TButton')
+    scrapButton.pack(side='left', padx=5)
+
+    infoButton = ttk.Button(buttonFrame2, text="정보만 검색", command=doScrapInfo, style='Blue.TButton')
+    infoButton.pack(side='left', padx=5)
+
+    closeButton = ttk.Button(buttonFrame2, text="닫기", command=scrapWindow.destroy)
+    closeButton.pack(side='right', padx=5)
+
 
 ########################
 # 중첩 프레임          #
@@ -490,27 +683,32 @@ imgFolderOpenButton = ttk.Button(buttonFrame, text="이미지 폴더 열기", wi
                                   command=lambda: openFolderHandler(path.join(os.getcwd(), path.dirname(xmlUtil.XmlManager().findGameByIdx(lastRomIdx)['image']))))
 imgFolderOpenButton.grid(column=0, row=3, pady=3, padx=5, sticky='ew')
 
+# 이미지 스크랩 버튼
+imgScrapButton = ttk.Button(buttonFrame, text="이미지 스크랩", width=BTN_WIDTH,
+                             command=openImageScrapWindow, style='Blue.TButton')
+imgScrapButton.grid(column=0, row=4, pady=3, padx=5, sticky='ew')
+
 # 롬 파일 및 이미지 삭제 버튼
 fileDeleteButton = ttk.Button(buttonFrame, text="선택 롬/이미지 삭제", width=BTN_WIDTH,
                                command=deleteRomAndImageHandler, style='Danger.TButton')
-fileDeleteButton.grid(column=0, row=4, pady=3, padx=5, sticky='ew')
+fileDeleteButton.grid(column=0, row=5, pady=3, padx=5, sticky='ew')
 
 # 구분선
-ttk.Separator(buttonFrame, orient='horizontal').grid(column=0, row=5, pady=10, padx=5, sticky='ew')
+ttk.Separator(buttonFrame, orient='horizontal').grid(column=0, row=6, pady=10, padx=5, sticky='ew')
 
 # 그루비 라벨
 groovyLabel = ttk.Label(buttonFrame, text="그루비 동기화")
-groovyLabel.grid(column=0, row=6, pady=(0, 5), padx=5, sticky='w')
+groovyLabel.grid(column=0, row=7, pady=(0, 5), padx=5, sticky='w')
 
 # 그루비 리스트 내보내기 버튼
 groovyListButton = ttk.Button(buttonFrame, text="리스트 내보내기", width=BTN_WIDTH,
                                command=exportGroovyList)
-groovyListButton.grid(column=0, row=7, pady=3, padx=5, sticky='ew')
+groovyListButton.grid(column=0, row=8, pady=3, padx=5, sticky='ew')
 
 # 그루비로 롬 동기화 버튼
 groovySyncButton = ttk.Button(buttonFrame, text="롬 동기화", width=BTN_WIDTH,
                                command=exportRomsToGroovy, style='Green.TButton')
-groovySyncButton.grid(column=0, row=8, pady=3, padx=5, sticky='ew')
+groovySyncButton.grid(column=0, row=9, pady=3, padx=5, sticky='ew')
 
 
 def setBasePath():

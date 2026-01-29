@@ -121,7 +121,23 @@ class Config:
         '''
         if self.secret == None:
             return None
-        return self.secret['DEFAULT']['DeepLApiKey']    
+        return self.secret['DEFAULT']['DeepLApiKey']
+
+    def getScreenScraperID(self):
+        '''
+        ScreenScraper 계정 ID를 반환한다.
+        '''
+        if self.secret == None:
+            return None
+        return self.secret['DEFAULT'].get('ScreenScraperID', None)
+
+    def getScreenScraperPassword(self):
+        '''
+        ScreenScraper 계정 비밀번호를 반환한다.
+        '''
+        if self.secret == None:
+            return None
+        return self.secret['DEFAULT'].get('ScreenScraperPassword', None)    
     
     def getScrapperSkipWord(self):
         '''

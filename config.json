@@ -14,6 +14,7 @@
     "xmlName": "gamelist.xml",
     "scrapperXmlName": "game.xml",
     "retroarchPath": "C:\\RetroArch-Win64\\retroarch.exe",
+    "retroarchConfigPath": "C:\\RetroArch-Win64\\retroarch.cfg",
     "cores": {
         "anux": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
         "gb": "C:\\RetroArch-Win64\\cores\\gambatte_libretro.dll",
@@ -62,7 +63,8 @@
             "gbc": "Nintendo - Game Boy Color.txt",
             "gba": "Nintendo - Game Boy Advance.txt",
             "snes": "Nintendo - Super Nintendo Entertainment System.txt",
-            "fbneo": "FBNeo - Arcade Games.txt"             
+            "fbneo": "FBNeo - Arcade Games.txt",
+            "n64": "Nintendo - Nintendo 64.txt"             
         },
         "skipWord": "ZZZ"
     },
