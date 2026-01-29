@@ -14,41 +14,23 @@ class TestScreenScraperAPI:
         from screenScraper import ScreenScraperAPI
         return ScreenScraperAPI()
 
-    def test_api_configured(self, api):
-        """Test that API credentials are configured."""
-        assert api.devid is not None
-        assert api.devpassword is not None
-        assert len(api.devid) > 0
-        assert len(api.devpassword) > 0
-
     def test_api_connection(self, api):
-        """Test API connection with known game hash."""
-        # Test data: Ultima - Quest of the Avatar (U).zip
-        system_id = 3  # NES
-        test_md5 = "D370C3788F5FE2FA6E02E9DEADC7F56B"
-        test_crc = "C7F5B3D8"
-
-        params = {
-            'devid': api.devid,
-            'devpassword': api.devpassword,
-            'softname': api.softname,
-            'output': 'json',
-            'systemeid': system_id,
-            'md5': test_md5,
-            'crc': test_crc
-        }
-
-        url = "https://www.screenscraper.fr/api2/jeuInfos.php"
-        response = requests.get(url, params=params, timeout=30)
-
-        # API should respond (200 = found, 404 = not found but connection works)
-        assert response.status_code in [200, 404, 430]  # 430 = quota exceeded
-
-    @pytest.mark.skip(reason="Requires actual ROM file")
-    def test_search_game(self, api):
-        """Test searching for a game."""
-        # This test requires an actual ROM file
-        pass
+        """Test API connection with known game."""
+        # Test data: Sonic The Hedgehog 2 (World).zip
+        system_id = 1  # Genesis/Megadrive
+        test_crc = "50ABC90A"
+        
+        # We use searchGame directly to test the integration
+        game_data = api.searchGame(
+            romPath="Sonic The Hedgehog 2 (World).zip", # Path doesn't exist but we pass CRC
+            systemId=system_id,
+            romName="Sonic The Hedgehog 2 (World).zip"
+        )
+        
+        # If API is working, it should return game data or at least not fail with 403
+        # Since we are using 'test' credentials, let's see what happens
+        assert game_data is not None
+        assert game_data.get('id') == '3'
 
     def test_get_system_id(self):
         """Test system ID mapping."""

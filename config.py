@@ -108,6 +108,7 @@ class Config:
         '''ini 파일에서 secret 정보를 읽어온다.'''
         import configparser
         self.secret = configparser.ConfigParser()
+        self.secret.optionxform = str  # 대소문자 보존 처리
         # 절대 경로로 secret.ini 파일 경로 지정 (작업 디렉토리 변경에 영향받지 않도록)
         secretIniPath = path.join(path.dirname(self.jsonFileName), 'secret.ini')
         if path.exists(secretIniPath):
@@ -129,7 +130,7 @@ class Config:
         '''
         if self.secret == None:
             return None
-        return self.secret['DEFAULT'].get('ScreenScraperID', None)
+        return self.secret.get('DEFAULT', 'ScreenScraperID', fallback=None)
 
     def getScreenScraperPassword(self):
         '''
@@ -137,7 +138,23 @@ class Config:
         '''
         if self.secret == None:
             return None
-        return self.secret['DEFAULT'].get('ScreenScraperPassword', None)    
+        return self.secret.get('DEFAULT', 'ScreenScraperPassword', fallback=None)
+
+    def getScreenScraperDevID(self):
+        '''
+        ScreenScraper 개발자 ID를 반환한다.
+        '''
+        if self.secret == None:
+            return None
+        return self.secret.get('DEFAULT', 'ScreenScraperDevID', fallback='xxx')
+
+    def getScreenScraperDevPassword(self):
+        '''
+        ScreenScraper 개발자 비밀번호를 반환한다.
+        '''
+        if self.secret == None:
+            return None
+        return self.secret.get('DEFAULT', 'ScreenScraperDevPassword', fallback='yyy')
     
     def getScrapperSkipWord(self):
         '''

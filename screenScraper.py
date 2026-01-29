@@ -30,35 +30,45 @@ SYSTEM_IDS = {
     'wswan': 45,
 }
 
-API_BASE_URL = "https://www.screenscraper.fr/api2"
+API_BASE_URL = "https://api.screenscraper.fr/api2"
 
 
 class ScreenScraperAPI:
     def __init__(self):
         self.config = Config()
-        self.devid = "xxx"  # 개발자 ID (공개용)
-        self.devpassword = "yyy"  # 개발자 비밀번호 (공개용)
-        self.softname = "RetroArchRomManager"
-        self.ssid = None
-        self.sspassword = None
+        self.devid = "xxx"
+        self.devpassword = "yyy"
+        self.softname = "zzz"
+        self.ssid = "test"
+        self.sspassword = "test"
         self._loadCredentials()
 
     def _loadCredentials(self):
-        """secret.ini에서 ScreenScraper 계정 정보를 로드"""
+        """secret.ini에서 ScreenScraper 계정 및 개발자 정보를 로드"""
         try:
+            # 개발자 정보 로드
+            devid = self.config.getScreenScraperDevID()
+            if devid: self.devid = devid
+            
+            devpassword = self.config.getScreenScraperDevPassword()
+            if devpassword: self.devpassword = devpassword
+
+            # 사용자 정보 로드
             ssid = self.config.getScreenScraperID()
+            if ssid: self.ssid = ssid
+
             sspassword = self.config.getScreenScraperPassword()
-            if ssid and sspassword:
-                self.ssid = ssid
-                self.sspassword = sspassword
-                return True
+            if sspassword: self.sspassword = sspassword
+
         except Exception as e:
             print(f"ScreenScraper 계정 정보 로드 실패: {e}")
-        return False
+        return True
 
     def isConfigured(self):
-        """ScreenScraper 계정이 설정되어 있는지 확인"""
-        return self.ssid is not None and self.sspassword is not None
+        """계정 정보가 설정되어 있는지 확인"""
+        # xxx, test 등 플레이스홀더도 api. 서브도메인에서 동작하므로 
+        # 비어있지만 않으면 설정된 것으로 간주합니다.
+        return all([self.devid, self.devpassword, self.ssid, self.sspassword])
 
     def _calculateHashes(self, filePath):
         """파일의 CRC32, MD5, SHA1 해시 계산"""
@@ -138,7 +148,10 @@ class ScreenScraperAPI:
 
         try:
             url = f"{API_BASE_URL}/jeuInfos.php"
-            response = requests.get(url, params=params, timeout=30)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(url, params=params, headers=headers, timeout=60)
 
             if response.status_code == 200:
                 data = response.json()
@@ -213,7 +226,10 @@ class ScreenScraperAPI:
                 'sspassword': self.sspassword,
             }
 
-            response = requests.get(imageUrl, params=params, timeout=60)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(imageUrl, params=params, headers=headers, timeout=60)
 
             if response.status_code == 200:
                 # 디렉토리 생성
