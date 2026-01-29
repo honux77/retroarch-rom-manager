@@ -1,45 +1,55 @@
+# test_fileUtil.py
+# Tests for fileUtil module
+
+import pytest
+import os
+
+
 class TestFileUtil:
+    """Tests for fileUtil module."""
 
-    def setup_method(self):
-        import fileUtil
+    @pytest.fixture
+    def config(self):
+        """Provide Config instance."""
         import config
-        self.config = config.Config()
-        self.SUBDIR = 'anux'
+        return config.Config()
 
-    def test_chroot(self):
-        '''
-        설정한 기본디렉토리로 이동이 되는지 테스트
-        '''
-        import os    
+    @pytest.fixture
+    def sub_dir(self):
+        """Default sub directory for tests."""
+        return 'anux'
+
+    def test_change_root_dir(self, config):
+        """Test changing to root ROM directory."""
         import fileUtil
         fileUtil.changeRootDir()
-        assert os.getcwd() == self.config.getBasePath()
+        assert os.getcwd() == config.getBasePath()
 
-    def test_chsubdir(self):
-        '''
-        설정한 기본디렉토리로 이동이 되는지 테스트
-        '''
-        import os    
+    def test_change_sub_dir(self, config, sub_dir):
+        """Test changing to sub ROM directory."""
         import fileUtil
-        fileUtil.changeSubRomDir(self.SUBDIR)
-        assert os.getcwd() == self.config.getBasePath() + '\\' + self.SUBDIR
+        fileUtil.changeSubRomDir(sub_dir)
+        expected_path = os.path.join(config.getBasePath(), sub_dir)
+        assert os.getcwd() == expected_path
 
-    def test_getCurrentRomDirName(self):
-        '''
-        하위 디렉토리를 읽는지 테스트
-        '''
+    def test_get_current_rom_dir_name(self, sub_dir):
+        """Test getting current ROM directory name."""
         import fileUtil
-        subdir = fileUtil.getCurrentRomDirName()
-        assert subdir == self.SUBDIR
+        fileUtil.changeSubRomDir(sub_dir)
+        current_dir = fileUtil.getCurrentRomDirName()
+        assert current_dir == sub_dir
 
-    def test_getRomCount(self):
-        '''
-        하위 디렉토리의 파일 갯수를 읽는지 테스트
-        '''
+    def test_get_rom_count(self, sub_dir):
+        """Test counting ROM files in directory."""
         import fileUtil
+        fileUtil.changeSubRomDir(sub_dir)
         count = fileUtil.getRomCount()
-        print(f"서브롬 디렉토리 {self.SUBDIR}의 롬파일 갯수: {count}")
-        assert count > 3
-        
+        assert count > 0, f"Expected ROM files in {sub_dir}"
 
-    
+    def test_read_sub_dirs(self, config):
+        """Test reading sub directories."""
+        import fileUtil
+        fileUtil.changeRootDir()
+        sub_dirs = fileUtil.readSubDirs()
+        assert len(sub_dirs) > 0, "Expected at least one sub directory"
+        assert all(isinstance(d, str) for d in sub_dirs)

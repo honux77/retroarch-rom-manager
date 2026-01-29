@@ -1,34 +1,38 @@
-class TestGroovy:
+# test_groovy.py
+# Tests for groovy module
 
-    def setup_method(self):
-        import os    
-        from os import path
+import pytest
+
+
+class TestGroovy:
+    """Tests for Groovy export functionality."""
+
+    @pytest.fixture
+    def setup_mame(self):
+        """Setup MAME directory for groovy tests."""
         import config
         import fileUtil
         from xmlUtil import XmlManager
 
-        SUBDIR = 'mame'
+        sub_dir = 'mame'
+        fileUtil.changeSubRomDir(sub_dir)
+        return {
+            'config': config.Config(),
+            'xml_manager': XmlManager(),
+            'sub_dir': sub_dir
+        }
 
-        fileUtil.changeSubRomDir(SUBDIR)
-        self.config = config.Config()
-        self.xmlManager = XmlManager()
-        
-
-    def test_readCsv(self):
-        '''
-        csv 파일을 읽는지 테스트
-        '''
+    def test_read_csv(self, setup_mame):
+        """Test reading Groovy CSV file."""
         import groovy
-        groovyData = groovy.readCsv()
-        for data in groovyData:
-            print(data)
-        assert len(groovyData) > 0
+        groovy_data = groovy.readCsv()
+        assert len(groovy_data) > 0, "Expected CSV data"
 
-    def test_exportGroovyList(self):
-        '''
-        xml 파일을 읽어서 MAME 리스트로 변환하는지 테스트
-        '''
+    def test_export_groovy_list(self, setup_mame):
+        """Test exporting Groovy list from XML."""
         import groovy
-        (match, total) = groovy.exportGroovyList(dryRun=False)
-        assert match > 0 and total > 0
-        assert match == total
+        match, total = groovy.exportGroovyList(dryRun=False)
+
+        assert total > 0, "Expected some games"
+        assert match > 0, "Expected some matches"
+        assert match == total, f"Expected all games to match: {match}/{total}"
