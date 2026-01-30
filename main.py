@@ -9,7 +9,7 @@ from PySide6.QtGui import QIcon
 
 # Local modules
 import config as config_module
-import lastStatus
+import LastStatus
 import mainHandler
 import fileUtil
 import theme
@@ -21,7 +21,7 @@ def main():
     mainHandler.initMainProgram(app_config)
 
     # Load last status
-    status = lastStatus.LastStatus()
+    status = LastStatus.LastStatus()
 
     # Store program path before changing directory
     program_path = os.getcwd()
