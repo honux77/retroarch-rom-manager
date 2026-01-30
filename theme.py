@@ -7,34 +7,34 @@ from pathlib import Path
 # Color Palette - Modern Console Dark Theme
 COLORS = {
     # Background colors
-    'bg_primary': '#1a1a2e',      # Deep navy (main background)
-    'bg_secondary': '#16213e',    # Dark blue (sub background)
-    'bg_card': '#0f3460',         # Card/panel background
+    'bg_primary': '#0B0E14',      # Almost black navy
+    'bg_secondary': '#111827',    # Dark navy
+    'bg_card': '#1F2937',         # Dark gray
 
     # Text colors
-    'text_primary': '#e8e8e8',    # Light gray (main text)
-    'text_secondary': '#aaaacc',  # Muted text
-    'text_disabled': '#666688',   # Disabled text
+    'text_primary': '#E5E7EB',    # Almost white
+    'text_secondary': '#9CA3AF',  # Muted gray
+    'text_disabled': '#4B5563',   # Disabled text
 
     # Accent color
-    'accent': '#e94560',          # Hot pink/neon red
+    'accent': '#00FF9C',          # Neon green
 
-    # Neon button colors (console style)
-    'btn_green': '#00ff88',       # Y button - Execute (neon green)
-    'btn_green_bg': '#00aa66',
-    'btn_blue': '#00d4ff',        # X button - Info (neon blue)
-    'btn_blue_bg': '#0088cc',
-    'btn_yellow': '#ffdd00',      # B button - Translate (neon yellow)
-    'btn_yellow_bg': '#ccaa00',
-    'btn_red': '#ff4757',         # A button - Delete (neon red)
-    'btn_red_bg': '#cc3344',
+    # Neon button colors
+    'btn_green': '#00FF9C',       # Neon green
+    'btn_green_bg': '#065F46',
+    'btn_blue': '#38BDF8',        # Cyan
+    'btn_blue_bg': '#075985',
+    'btn_yellow': '#FFB000',      # Amber
+    'btn_yellow_bg': '#92400E',
+    'btn_red': '#EF4444',         # Red
+    'btn_red_bg': '#991B1B',
 
     # State colors
-    'hover': '#1a4a7a',
-    'selected': '#e94560',
-    'error': '#ff6677',
-    'success': '#00ff88',
-    'warning': '#ffdd00',
+    'hover': '#374151',
+    'selected': '#00FF9C',
+    'error': '#F87171',
+    'success': '#00FF9C',
+    'warning': '#FFB000',
 }
 
 # Font settings
