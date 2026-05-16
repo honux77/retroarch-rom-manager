@@ -24,8 +24,6 @@ def main():
     status = LastStatus.LastStatus()
 
     # Store program path before changing directory
-    program_path = os.getcwd()
-
     # Change working directory
     fileUtil.changeRootDir()
 
@@ -41,7 +39,6 @@ def main():
 
     # Create main window
     window = MainWindow(app_config, status)
-    window.program_path = program_path
 
     # Read sub directories
     base_path = app_config.getBasePath()

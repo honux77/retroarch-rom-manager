@@ -11,9 +11,22 @@ def initMainProgram(cfg):
 
 async def runRetroarch(subRomDir, romPath, cfg):
     '''Retroarch를 실행합니다.'''
-    from os import path
     import subprocess
-    cmd = [cfg.getRetroarchPath(), '--config', cfg.getRetroarchConfigPath(), '-L', cfg.getCoreLibaryName(subRomDir), romPath]        
+    from os import path
+
+    cmd = [cfg.getRetroarchPath(), '--config', cfg.getRetroarchConfigPath(),
+           '-L', cfg.getCoreLibaryName(subRomDir)]
+
+    resolution = cfg.getRetroarchVideoSize()
+    if resolution:
+        w, h = resolution
+        override_path = path.join(path.dirname(cfg.getRetroarchConfigPath()), 'rommanager_override.cfg')
+        with open(override_path, 'w') as f:
+            f.write(f'video_fullscreen_x = "{w}"\n')
+            f.write(f'video_fullscreen_y = "{h}"\n')
+        cmd += ['--appendconfig', override_path]
+
+    cmd.append(romPath)
     print("에뮬레이터를 실행합니다: ", cmd)
     subprocess.Popen(cmd)
 

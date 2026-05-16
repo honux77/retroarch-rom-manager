@@ -49,13 +49,18 @@ FONTS = {
 
 def load_stylesheet() -> str:
     """Load QSS stylesheet from file."""
-    qss_path = Path(__file__).parent / 'ui' / 'styles.qss'
+    import sys
+    if getattr(sys, 'frozen', False):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).parent
+
+    qss_path = base / 'ui' / 'styles.qss'
 
     if qss_path.exists():
         with open(qss_path, 'r', encoding='utf-8') as f:
             return f.read()
 
-    # Return empty string if file not found
     return ""
 
 

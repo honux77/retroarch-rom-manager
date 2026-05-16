@@ -99,6 +99,14 @@ class Config:
         retroarch config 경로를 반환한다.
         '''
         return self.configJson['retroarchConfigPath']
+
+    def getRetroarchVideoSize(self):
+        '''
+        retroarch 실행 해상도를 (width, height)로 반환한다. 설정 없으면 None 반환.
+        '''
+        w = self.configJson.get('retroarchVideoWidth')
+        h = self.configJson.get('retroarchVideoHeight')
+        return (w, h) if w and h else None
     
     def getCoreLibaryName(self, subRomDir):
         '''

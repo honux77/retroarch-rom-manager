@@ -32,7 +32,11 @@ class MainWindow(QMainWindow):
         self.status = status
         self.last_rom_idx = status.getLastRomIdx()
         self.last_sub_rom_dir = status.getLastSubRomDirectory()
-        self.program_path = os.getcwd()
+        import sys
+        if getattr(sys, 'frozen', False):
+            self.program_path = sys._MEIPASS
+        else:
+            self.program_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
         # XML Manager will be set after rom dir selection
         self.xml_manager = None
