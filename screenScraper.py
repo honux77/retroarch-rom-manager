@@ -46,14 +46,16 @@ class ScreenScraperAPI:
     def _loadCredentials(self):
         """secret.ini에서 ScreenScraper 계정 및 개발자 정보를 로드"""
         try:
-            # 개발자 정보 로드
             devid = self.config.getScreenScraperDevID()
             if devid: self.devid = devid
-            
+
             devpassword = self.config.getScreenScraperDevPassword()
             if devpassword: self.devpassword = devpassword
 
-            # 사용자 정보 로드
+            softname = self.config.getScreenScraperSoftname()
+            if softname: self.softname = softname
+
+            # 사용자 계정은 없어도 동작 (devid/devpassword만 있으면 됨)
             ssid = self.config.getScreenScraperID()
             if ssid: self.ssid = ssid
 
@@ -62,13 +64,10 @@ class ScreenScraperAPI:
 
         except Exception as e:
             print(f"ScreenScraper 계정 정보 로드 실패: {e}")
-        return True
 
     def isConfigured(self):
-        """계정 정보가 설정되어 있는지 확인"""
-        # xxx, test 등 플레이스홀더도 api. 서브도메인에서 동작하므로 
-        # 비어있지만 않으면 설정된 것으로 간주합니다.
-        return all([self.devid, self.devpassword, self.ssid, self.sspassword])
+        """devid/devpassword가 설정되어 있는지 확인"""
+        return bool(self.devid and self.devpassword)
 
     def _calculateHashes(self, filePath):
         """파일의 CRC32, MD5, SHA1 해시 계산"""
@@ -130,11 +129,13 @@ class ScreenScraperAPI:
             'devid': self.devid,
             'devpassword': self.devpassword,
             'softname': self.softname,
-            'ssid': self.ssid,
-            'sspassword': self.sspassword,
             'output': 'json',
             'systemeid': systemId,
         }
+        if self.ssid:
+            params['ssid'] = self.ssid
+        if self.sspassword:
+            params['sspassword'] = self.sspassword
 
         # 해시 또는 파일명으로 검색
         if crc32:
@@ -170,6 +171,31 @@ class ScreenScraperAPI:
         except Exception as e:
             print(f"API 요청 실패: {e}")
             return None
+
+    def getAllGameImages(self, gameData):
+        """
+        게임 데이터에서 이미지(동영상 제외) 전체 목록 반환.
+        Returns: [{'type': 'ss', 'region': 'wor', 'url': '...'}, ...]
+        """
+        if not gameData or 'medias' not in gameData:
+            return []
+
+        SKIP_TYPES = {'video', 'video-normalized', 'manuel', 'map'}
+        result = []
+        seen = set()
+        for media in gameData.get('medias', []):
+            media_type = media.get('type', '')
+            if media_type in SKIP_TYPES:
+                continue
+            url = media.get('url', '')
+            if not url:
+                continue
+            region = media.get('region', '') or 'wor'
+            key = (media_type, region)
+            if key not in seen:
+                seen.add(key)
+                result.append({'type': media_type, 'region': region, 'url': url})
+        return result
 
     def getGameImages(self, gameData, imageTypes=None):
         """
@@ -217,14 +243,15 @@ class ScreenScraperAPI:
             성공 여부
         """
         try:
-            # API 인증 정보 추가
             params = {
                 'devid': self.devid,
                 'devpassword': self.devpassword,
                 'softname': self.softname,
-                'ssid': self.ssid,
-                'sspassword': self.sspassword,
             }
+            if self.ssid:
+                params['ssid'] = self.ssid
+            if self.sspassword:
+                params['sspassword'] = self.sspassword
 
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'

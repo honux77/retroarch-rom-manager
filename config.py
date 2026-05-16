@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from os import path
 
 from singleton import singleton
@@ -12,9 +13,16 @@ class Config:
     '''
 
     def __init__(self):
-        # setup 윈도우에서 저장하기를 누를 때 기본 폴더가 변경되어 발생하는 오류를 막기위해 절대 경로로 파일 위치를 지정정
+        # PyInstaller bundled check
+        if getattr(sys, 'frozen', False):
+            # The application is running as a bundle
+            application_path = os.path.dirname(sys.executable)
+        else:
+            # The application is running as a normal Python script
+            application_path = os.path.dirname(os.path.abspath(__file__))
+
         print("Load Global Configurations")
-        self.jsonFileName = path.join(os.getcwd(), 'config.json')
+        self.jsonFileName = path.join(application_path, 'config.json')
         print("설정 파일 경로: ", self.jsonFileName)
         self.load()
         self.loadSecretIni()
@@ -155,6 +163,14 @@ class Config:
         if self.secret == None:
             return None
         return self.secret.get('DEFAULT', 'ScreenScraperDevPassword', fallback='yyy')
+
+    def getScreenScraperSoftname(self):
+        '''
+        ScreenScraper 소프트웨어 이름을 반환한다.
+        '''
+        if self.secret == None:
+            return 'rommanager-v1'
+        return self.secret.get('DEFAULT', 'ScreenScraperSoftname', fallback='rommanager-v1')
     
     def getScrapperSkipWord(self):
         '''
