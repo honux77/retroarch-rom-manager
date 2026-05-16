@@ -5,8 +5,6 @@
 import os
 from os import path
 import re
-import tkinter as tk
-from tkinter import messagebox as mBox
 
 from config import Config
 config = Config()
@@ -109,17 +107,12 @@ def deleteRomAndImages(game):
     msg = ""
     romPath = game['path']
     imagePath = game['image']
-    result = mBox.askquestion("삭제", "{}\n {}\n 선택된 롬과 이미지를 삭제하시겠습니까?".format(romPath, imagePath))
-
-    if result == 'no':
-        return "삭제 취소"
-    
     try:
         os.remove(romPath)
     except:
         msg += "롬 삭제 실패"
     try:
-        os.remove(imagePath)    
+        os.remove(imagePath)
     except:
         msg += "이미지 삭제 실패"
         return msg
