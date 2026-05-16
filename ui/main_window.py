@@ -18,7 +18,7 @@ from .widgets import (
     MissingImageListItem
 )
 from .dialogs import (
-    GroovySyncDialog, ImageScrapDialog,
+    GroovySyncDialog, ImageScrapDialog, SettingsDialog,
     show_error, show_info, ask_question, get_directory
 )
 
@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
 
         # XML Manager will be set after rom dir selection
         self.xml_manager = None
+        self._settings_dialog = None
 
         self._setup_window()
         self._setup_ui()
@@ -195,32 +196,9 @@ class MainWindow(QMainWindow):
         separator2.setFrameShape(QFrame.HLine)
         frame_layout.addWidget(separator2)
 
-        # Section: Settings
-        frame_layout.addWidget(SectionLabel("설정"))
-
-        self.set_base_path_button = StyledButton("기본 폴더 재설정", "default")
-        self.set_base_path_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.set_base_path_button)
-
-        self.set_target_path_button = StyledButton("기기 폴더 재설정", "default")
-        self.set_target_path_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.set_target_path_button)
-
-        self.open_config_button = StyledButton("설정 파일 열기", "default")
-        self.open_config_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.open_config_button)
-
-        self.open_retroarch_button = StyledButton("RetroArch 폴더 열기", "default")
-        self.open_retroarch_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.open_retroarch_button)
-
-        self.run_scrapper_button = StyledButton("Scrapper 실행", "green")
-        self.run_scrapper_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.run_scrapper_button)
-
-        self.delete_scrap_xml_button = StyledButton("ScrapXML 삭제", "red")
-        self.delete_scrap_xml_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.delete_scrap_xml_button)
+        self.open_settings_button = StyledButton("설정", "default")
+        self.open_settings_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.open_settings_button)
 
         frame_layout.addStretch()
         layout.addWidget(frame, row, col, 2, 1)  # rowspan=2
@@ -328,13 +306,8 @@ class MainWindow(QMainWindow):
         self.update_rom_button.clicked.connect(self._update_rom_info)
         self.translate_button.clicked.connect(self._translate_rom_info)
 
-        # Settings buttons
-        self.set_base_path_button.clicked.connect(self._set_base_path)
-        self.set_target_path_button.clicked.connect(self._set_target_path)
-        self.open_config_button.clicked.connect(self._open_config)
-        self.open_retroarch_button.clicked.connect(self._open_retroarch_folder)
-        self.run_scrapper_button.clicked.connect(self._run_scrapper)
-        self.delete_scrap_xml_button.clicked.connect(self._delete_scrap_xml)
+        # Settings button
+        self.open_settings_button.clicked.connect(self._open_settings)
 
     def init_rom_folders(self, sub_dirs: list):
         """Initialize ROM folder combo box."""
@@ -636,6 +609,19 @@ class MainWindow(QMainWindow):
         print("인덱스 업데이트:", self.last_rom_idx)
         self._refresh_rom_list()
 
+    def _open_settings(self):
+        """Open settings dialog."""
+        if self._settings_dialog is None:
+            self._settings_dialog = SettingsDialog(self.config, self)
+            self._settings_dialog.base_path_button.clicked.connect(self._set_base_path)
+            self._settings_dialog.target_path_button.clicked.connect(self._set_target_path)
+            self._settings_dialog.open_config_button.clicked.connect(self._open_config)
+            self._settings_dialog.open_retroarch_button.clicked.connect(self._open_retroarch_folder)
+            self._settings_dialog.run_scrapper_button.clicked.connect(self._run_scrapper)
+            self._settings_dialog.delete_scrap_xml_button.clicked.connect(self._delete_scrap_xml)
+        self._settings_dialog.show()
+        self._settings_dialog.raise_()
+
     def _set_base_path(self):
         """Set base ROM folder path."""
         import fileUtil
@@ -660,16 +646,26 @@ class MainWindow(QMainWindow):
         self.sub_rom_dir_combo.addItems(sub_dirs)
         self.sub_rom_dir_combo.setCurrentIndex(0)
 
+        if self._settings_dialog:
+            self._settings_dialog.refresh_values()
+
     def _set_target_path(self):
         """Set target device folder path."""
-        target_path = get_directory(self, "기기 폴더 선택", self.config.getTargetPath())
+        try:
+            initial = self.config.getTargetPath()
+        except (KeyError, TypeError):
+            initial = ""
+        target_path = get_directory(self, "기기 폴더 선택", initial)
         if target_path:
             self.config.setTargetPath(target_path)
             self.config.save()
+            if self._settings_dialog:
+                self._settings_dialog.refresh_values()
 
     def _open_config(self):
-        """Open config file."""
-        os.startfile(self.config.getConfigFilePath())
+        """Open config file in Notepad."""
+        import subprocess
+        subprocess.Popen(['notepad.exe', self.config.getConfigFilePath()])
 
     def _open_retroarch_folder(self):
         """Open RetroArch folder."""

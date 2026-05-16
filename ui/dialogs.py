@@ -449,3 +449,118 @@ def ask_question(parent, title: str, message: str) -> bool:
 def get_directory(parent, title: str, initial_dir: str = "") -> str:
     """Show directory selection dialog."""
     return QFileDialog.getExistingDirectory(parent, title, initial_dir)
+
+
+class SettingsDialog(QDialog):
+    """Settings dialog showing current values with action buttons."""
+
+    def __init__(self, config, parent=None):
+        super().__init__(parent)
+        self.config = config
+        self.setWindowTitle("설정")
+        self.setMinimumWidth(600)
+        self.setModal(False)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        from PySide6.QtWidgets import QLineEdit
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        # Header
+        header_grid = QGridLayout()
+        header_grid.setColumnStretch(1, 1)
+        for col, text in enumerate(["항목", "현재 설정값", ""]):
+            lbl = QLabel(text)
+            lbl.setProperty('class', 'section-title')
+            header_grid.addWidget(lbl, 0, col)
+        layout.addLayout(header_grid)
+
+        sep0 = QFrame()
+        sep0.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep0)
+
+        # Grid rows: (표시명, attr_name, getter, btn_label, btn_type)
+        rows = [
+            ("기본 폴더",    "base_path_button",    self._val_base_path,    "변경",      "default"),
+            ("기기 폴더",    "target_path_button",  self._val_target_path,  "변경",      "default"),
+            None,  # separator
+            ("설정 파일",    "open_config_button",  self.config.getConfigFilePath, "열기",  "default"),
+            ("RetroArch",    "open_retroarch_button", self.config.getRetroarchPath, "폴더 열기", "default"),
+            ("Scrapper",     "run_scrapper_button", self.config.getScrapperPath, "실행",   "green"),
+            ("ScrapXML",     "delete_scrap_xml_button", self.config.getScrapperXmlName, "삭제", "red"),
+        ]
+
+        self._value_fields = {}
+        grid = QGridLayout()
+        grid.setSpacing(8)
+        grid.setColumnStretch(1, 1)
+        grid_row = 0
+
+        for row in rows:
+            if row is None:
+                sep = QFrame()
+                sep.setFrameShape(QFrame.HLine)
+                grid.addWidget(sep, grid_row, 0, 1, 3)
+                grid_row += 1
+                continue
+
+            label, attr, getter, btn_label, btn_type = row
+
+            name_lbl = QLabel(label)
+            name_lbl.setFixedWidth(90)
+            name_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+            value_edit = QLineEdit()
+            value_edit.setReadOnly(True)
+            try:
+                value_edit.setText(getter())
+            except Exception:
+                value_edit.setText("(없음)")
+            self._value_fields[attr] = value_edit
+
+            btn = StyledButton(btn_label, btn_type)
+            btn.setFixedWidth(90)
+            setattr(self, attr, btn)
+
+            grid.addWidget(name_lbl, grid_row, 0)
+            grid.addWidget(value_edit, grid_row, 1)
+            grid.addWidget(btn, grid_row, 2)
+            grid_row += 1
+
+        layout.addLayout(grid)
+        layout.addStretch()
+
+        close_row = QHBoxLayout()
+        close_row.addStretch()
+        close_btn = StyledButton("닫기", "default")
+        close_btn.setFixedWidth(80)
+        close_btn.clicked.connect(self.close)
+        close_row.addWidget(close_btn)
+        layout.addLayout(close_row)
+
+    def _val_base_path(self):
+        return self.config.getBasePath()
+
+    def _val_target_path(self):
+        try:
+            return self.config.getTargetPath()
+        except (KeyError, TypeError):
+            return "(미설정)"
+
+    def refresh_values(self):
+        """Reload current config values into the display fields."""
+        getters = {
+            "base_path_button":    self._val_base_path,
+            "target_path_button":  self._val_target_path,
+            "open_config_button":  self.config.getConfigFilePath,
+            "open_retroarch_button": self.config.getRetroarchPath,
+            "run_scrapper_button": self.config.getScrapperPath,
+            "delete_scrap_xml_button": self.config.getScrapperXmlName,
+        }
+        for attr, getter in getters.items():
+            try:
+                self._value_fields[attr].setText(getter())
+            except Exception:
+                self._value_fields[attr].setText("(없음)")

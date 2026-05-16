@@ -64,7 +64,8 @@
             "gba": "Nintendo - Game Boy Advance.txt",
             "snes": "Nintendo - Super Nintendo Entertainment System.txt",
             "fbneo": "FBNeo - Arcade Games.txt",
-            "n64": "Nintendo - Nintendo 64.txt"             
+            "n64": "Nintendo - Nintendo 64.txt",
+            "psx": "Sony - PlayStation.txt"
         },
         "skipWord": "ZZZ"
     },
