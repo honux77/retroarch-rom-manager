@@ -132,8 +132,12 @@ class SyncFile:
                 if remoteFile not in localFileList:
                     try:
                         fileAttr = sftp.stat(remoteFile)
-                        if fileAttr.st_mode & 0o40000:  # 디렉토리면 스킵
-                            continue
+                    except IOError as e:
+                        print(f'원격 파일 정보 조회 실패 ({remoteFile}): {e}')
+                        continue
+                    if fileAttr.st_mode & 0o40000:  # 디렉토리면 스킵
+                        continue
+                    try:
                         sftp.remove(remoteFile)
                         print(f'원격에서 제거: {remoteFile}')
                         removeRomCount += 1
@@ -180,6 +184,13 @@ class SyncFile:
 
             for remoteImage in remoteImageList:
                 if remoteImage not in localImageList:
+                    try:
+                        fileAttr = sftp.stat(remoteImage)
+                    except IOError as e:
+                        print(f'원격 이미지 파일 정보 조회 실패 ({remoteImage}): {e}')
+                        continue
+                    if fileAttr.st_mode & 0o40000:  # 디렉토리면 스킵
+                        continue
                     try:
                         sftp.remove(remoteImage)
                         print(f'원격에서 이미지 제거: {remoteImage}')

@@ -239,7 +239,7 @@ class XmlManager:
                     'desc': '{} is a good game!'.format(getFileNameWithoutExt(romFile)),
                 }
                 print("Add game: ", game)
-                self.gameMap[romFile] = game
+                self.gameMap[romPath] = game
                 self._addNodeInGameNodes(game)
                 append += 1                
         return append
