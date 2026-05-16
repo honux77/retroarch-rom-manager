@@ -23,8 +23,8 @@ class SyncFile:
         listfilename = self.server['listFilename'][subRomDir]
         self.localPath = path.join(self.server['localListPath'], listfilename)
         # linux에서는 /로 경로를 구분해서 path.join을 사용하면 안된다.
-        self.remotePath = self.server['remoteListPath'] +"/" + listfilename
-        print(f"설정 파일에서 {subRomDir} 롬 폴더에 대한 리스트 파일 정보를 찾을 수 없습니다.")            
+        self.remotePath = self.server['remoteListPath'] + "/" + listfilename
+        print(f"서버 정보 설정 완료: {serverName} / {subRomDir}")
         
         
     def connectSSH(self):
@@ -85,7 +85,6 @@ class SyncFile:
         config = Config()
 
         def update_progress(current, total, message=""):
-            """Update progress using callback or Tkinter widgets."""
             if callback:
                 callback(current, total)
             elif status_window and status_label and progress_bar:
@@ -94,89 +93,117 @@ class SyncFile:
                 progress_bar['value'] = progress
                 status_window.update_idletasks()
 
-        #시작전 manual 폴더 삭제
         import fileUtil
         fileUtil.cleanRomFolder()
 
         if not self.connected:
             print("SSH에 연결되어 있지 않습니다.")
-            return -1,-1
+            return -1, -1
 
-        # 서브롬 폴더와 서버의 ~/shared/<subRomDir> 폴더를 비교하고 동기화한다.
-        # 1. 로컬 폴더 목록 읽기, 하위 폴더와 파일도 모두 포함한다.
         import os
         from os import path
+
         localBasePath = path.join(config.getBasePath(), subRomDir)
         localImagePath = path.join(localBasePath, 'media', 'images')
-        localFileList = os.listdir(localBasePath)
-        localImageList = os.listdir(localImagePath)
+
+        # 파일만 포함 (디렉토리 제외) — media 폴더 등을 sftp.put 하면 실패함
+        localFileList = [f for f in os.listdir(localBasePath)
+                         if path.isfile(path.join(localBasePath, f))]
+        localImageList = [f for f in os.listdir(localImagePath)
+                          if path.isfile(path.join(localImagePath, f))]
 
         total_files = len(localFileList) + len(localImageList)
 
         sftp = self.ssh.open_sftp()
-        sftp.chdir(self.server['remoteRomPath'] + '/' + subRomDir)
-        remoteFileList = sftp.listdir()
+        try:
+            remoteRomDir = self.server['remoteRomPath'] + '/' + subRomDir
+            try:
+                sftp.chdir(remoteRomDir)
+            except IOError:
+                print(f'원격 롬 디렉토리 없음, 생성: {remoteRomDir}')
+                sftp.mkdir(remoteRomDir)
+                sftp.chdir(remoteRomDir)
 
-        # 원격에만 있는 파일 조회 후 제거
-        removeRomCount = 0
-        for remoteFile in remoteFileList:
-            if remoteFile not in localFileList:
-                #원격에만 있는 파일이 디렉토리라면 스킵
-                try:
-                    fileAttr = sftp.stat(remoteFile)
-                    if fileAttr.st_mode & 0o40000: #디렉토리인 경우
-                        continue
-                except IOError:
-                    continue
+            remoteFileList = sftp.listdir()
 
-                print(f'원격에서 제거: {remoteFile}')
-                sftp.remove(remoteFile)
-                removeRomCount += 1
+            # 원격에만 있는 파일 제거
+            removeRomCount = 0
+            for remoteFile in remoteFileList:
+                if remoteFile not in localFileList:
+                    try:
+                        fileAttr = sftp.stat(remoteFile)
+                        if fileAttr.st_mode & 0o40000:  # 디렉토리면 스킵
+                            continue
+                        sftp.remove(remoteFile)
+                        print(f'원격에서 제거: {remoteFile}')
+                        removeRomCount += 1
+                    except IOError as e:
+                        print(f'원격 파일 제거 실패 ({remoteFile}): {e}')
 
-        print(f'원격에서 제거된 파일 수: {removeRomCount}')
+            print(f'원격에서 제거된 롬 파일 수: {removeRomCount}')
 
-        # 로컬에만 있는 파일 조회 후 업로드
-        uploadRomCount = 0
-        totalRomCount = 0
-        for localFile in localFileList:
-            totalRomCount += 1
-            if localFile not in remoteFileList:
-                #로컬에만 있는 파일
-                localFilePath = path.join(localBasePath, localFile)
-                sftp.put(localFilePath, localFile)
-                print(f'원격에 업로드: {localFile}')
-                uploadRomCount += 1
-            #진행 상태 업데이트
-            update_progress(totalRomCount, total_files, f'{subRomDir} 롬 동기화 중...')
+            # 로컬에만 있는 파일 업로드
+            uploadRomCount = 0
+            for i, localFile in enumerate(localFileList):
+                if localFile not in remoteFileList:
+                    localFilePath = path.join(localBasePath, localFile)
+                    try:
+                        sftp.put(localFilePath, localFile)
+                        print(f'원격에 업로드: {localFile}')
+                        uploadRomCount += 1
+                    except IOError as e:
+                        print(f'롬 업로드 실패 ({localFile}): {e}')
+                update_progress(i + 1, total_files, f'{subRomDir} 롬 동기화 중...')
 
-        print(f'원격에 업로드된 파일 수: {uploadRomCount}')
+            print(f'원격에 업로드된 롬 파일 수: {uploadRomCount}')
 
-        # 원격에만 있는 이미지 파일 조회 후 제거
-        removeImageCount = 0
-        sftp.chdir(self.server['remoteImagePath'].replace('[SUB]', subRomDir))
-        remoteImageList = sftp.listdir()
-        for remoteImage in remoteImageList:
-            if remoteImage not in localImageList:
-                print(f'원격에서 제거: {remoteImage}')
-                sftp.remove(remoteImage)
-                removeImageCount += 1
+            # 이미지 디렉토리 동기화
+            removeImageCount = 0
+            uploadImageCount = 0
+            remoteImageDir = self.server['remoteImagePath'].replace('[SUB]', subRomDir)
+            try:
+                sftp.chdir(remoteImageDir)
+            except IOError:
+                print(f'원격 이미지 디렉토리 없음, 생성: {remoteImageDir}')
+                # 중간 경로가 없을 수 있으므로 단계별 생성
+                parts = remoteImageDir.strip('/').split('/')
+                cur = ''
+                for part in parts:
+                    cur += '/' + part
+                    try:
+                        sftp.stat(cur)
+                    except IOError:
+                        sftp.mkdir(cur)
+                sftp.chdir(remoteImageDir)
 
-        print(f'원격에서 제거된 이미지 파일 수: {removeImageCount}')
+            remoteImageList = sftp.listdir()
 
-        # 원격에만 있는 이미지 파일 조회 후 업로드
-        uploadImageCount = 0
-        totalImageCount = 0
-        for localImage in localImageList:
-            totalImageCount += 1
-            if localImage not in remoteImageList:
-                #로컬에만 있는 이미지 파일
-                localImageFilePath = path.join(localImagePath, localImage)
-                sftp.put(localImageFilePath, localImage)
-                print(f'원격에 업로드: {localImage}')
-                uploadImageCount += 1
+            for remoteImage in remoteImageList:
+                if remoteImage not in localImageList:
+                    try:
+                        sftp.remove(remoteImage)
+                        print(f'원격에서 이미지 제거: {remoteImage}')
+                        removeImageCount += 1
+                    except IOError as e:
+                        print(f'원격 이미지 제거 실패 ({remoteImage}): {e}')
 
-            #진행 상태 업데이트
-            update_progress(totalRomCount + totalImageCount, total_files, f'{subRomDir} 이미지 동기화 중...')
+            print(f'원격에서 제거된 이미지 파일 수: {removeImageCount}')
+
+            for i, localImage in enumerate(localImageList):
+                if localImage not in remoteImageList:
+                    localImageFilePath = path.join(localImagePath, localImage)
+                    try:
+                        sftp.put(localImageFilePath, localImage)
+                        print(f'원격에 이미지 업로드: {localImage}')
+                        uploadImageCount += 1
+                    except IOError as e:
+                        print(f'이미지 업로드 실패 ({localImage}): {e}')
+                update_progress(len(localFileList) + i + 1, total_files, f'{subRomDir} 이미지 동기화 중...')
+
+            print(f'원격에 업로드된 이미지 파일 수: {uploadImageCount}')
+
+        finally:
+            sftp.close()
 
         return (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, len(localFileList), len(localImageList))
            
