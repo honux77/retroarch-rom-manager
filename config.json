@@ -47,7 +47,7 @@
         },        
         "remoteListPath": "/home/arcade/shared/frontends/attract/romlists",
         "remoteRomPath": "/home/arcade/shared/roms",
-        "remoteImagePath": "/home/arcade/shared/roms/[SUB]/media/images",
+        "remoteImagePath": "/home/arcade/shared/media/[SUB]/snap",
         "localListPath": "D:\\Retropie\\romlists",
         "listFilename": {
             "mame": "MAME.txt",

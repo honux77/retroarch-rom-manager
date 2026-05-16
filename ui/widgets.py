@@ -29,7 +29,7 @@ class StyledButton(QPushButton):
         """Apply button style based on type."""
         self.setProperty('class', self.button_type)
         self.setCursor(Qt.PointingHandCursor)
-        self.setMinimumHeight(36)
+        self.setMinimumHeight(28)
 
         # Add glow effect for neon buttons
         if self.button_type in ('green', 'blue', 'yellow', 'red'):
@@ -166,7 +166,7 @@ class TitleLabel(QLabel):
         super().__init__(text, parent)
         self.setProperty('class', 'title')
         font = self.font()
-        font.setPointSize(16)
+        font.setPointSize(13)
         font.setBold(True)
         self.setFont(font)
         self.setAlignment(Qt.AlignCenter)

@@ -17,6 +17,8 @@ def readCsv():
         for row in reader:
             if row != []: # 빈 행은 제외
                 groovyData.append(row)
+    if not groovyData:
+        raise ValueError("리스트 파일이 비어 있습니다. 서버에서 파일을 확인하세요.")
     return groovyData[0], groovyData[1:] # header, data
     
 

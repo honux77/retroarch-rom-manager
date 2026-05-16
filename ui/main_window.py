@@ -69,15 +69,14 @@ class MainWindow(QMainWindow):
         content_layout = QGridLayout()
         content_layout.setSpacing(10)
 
-        # Row 1: Rom list, Image preview, Action buttons
+        # Row 1: Rom list, Image preview
+        # Row 2: Output messages, Rom details
+        # Col 2 (both rows): Right panel spanning full height
         self._create_rom_list_section(content_layout, 0, 0)
         self._create_image_preview_section(content_layout, 0, 1)
-        self._create_action_buttons_section(content_layout, 0, 2)
-
-        # Row 2: Output messages, Rom details, Settings
         self._create_output_section(content_layout, 1, 0)
         self._create_rom_details_section(content_layout, 1, 1)
-        self._create_settings_section(content_layout, 1, 2)
+        self._create_right_panel_section(content_layout, 0, 2)  # rowspan=2
 
         # Set column stretch
         content_layout.setColumnStretch(0, 1)
@@ -97,10 +96,12 @@ class MainWindow(QMainWindow):
         """Create title and folder selection section."""
         title_frame = CardFrame()
         title_layout = QVBoxLayout(title_frame)
-        title_layout.setSpacing(10)
+        title_layout.setSpacing(4)
+        title_layout.setContentsMargins(10, 6, 10, 6)
 
         # App title
         title_label = TitleLabel("RetroArch Rom Manager")
+        title_label.setFixedHeight(28)
         title_layout.addWidget(title_label)
 
         # Folder selection row
@@ -144,18 +145,16 @@ class MainWindow(QMainWindow):
         self.image_preview = ImagePreview()
         layout.addWidget(self.image_preview, row, col)
 
-    def _create_action_buttons_section(self, layout, row, col):
-        """Create action buttons section."""
+    def _create_right_panel_section(self, layout, row, col):
+        """Create right panel with action buttons and settings, spanning both rows."""
         frame = CardFrame()
         frame_layout = QVBoxLayout(frame)
         frame_layout.setSpacing(8)
 
-        # Button width
         btn_width = 160
 
         # Section: Basic actions
-        title = SectionLabel("기본 동작")
-        frame_layout.addWidget(title)
+        frame_layout.addWidget(SectionLabel("기본 동작"))
 
         self.run_rom_button = StyledButton("선택 롬 실행", "green")
         self.run_rom_button.setFixedWidth(btn_width)
@@ -177,14 +176,12 @@ class MainWindow(QMainWindow):
         self.delete_rom_button.setFixedWidth(btn_width)
         frame_layout.addWidget(self.delete_rom_button)
 
-        # Separator
-        separator = QFrame()
-        separator.setFrameShape(QFrame.HLine)
-        frame_layout.addWidget(separator)
+        separator1 = QFrame()
+        separator1.setFrameShape(QFrame.HLine)
+        frame_layout.addWidget(separator1)
 
         # Section: Groovy sync
-        groovy_title = SectionLabel("그루비 동기화")
-        frame_layout.addWidget(groovy_title)
+        frame_layout.addWidget(SectionLabel("그루비 동기화"))
 
         self.export_list_button = StyledButton("리스트 내보내기", "default")
         self.export_list_button.setFixedWidth(btn_width)
@@ -194,8 +191,39 @@ class MainWindow(QMainWindow):
         self.sync_roms_button.setFixedWidth(btn_width)
         frame_layout.addWidget(self.sync_roms_button)
 
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.HLine)
+        frame_layout.addWidget(separator2)
+
+        # Section: Settings
+        frame_layout.addWidget(SectionLabel("설정"))
+
+        self.set_base_path_button = StyledButton("기본 폴더 재설정", "default")
+        self.set_base_path_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.set_base_path_button)
+
+        self.set_target_path_button = StyledButton("기기 폴더 재설정", "default")
+        self.set_target_path_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.set_target_path_button)
+
+        self.open_config_button = StyledButton("설정 파일 열기", "default")
+        self.open_config_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.open_config_button)
+
+        self.open_retroarch_button = StyledButton("RetroArch 폴더 열기", "default")
+        self.open_retroarch_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.open_retroarch_button)
+
+        self.run_scrapper_button = StyledButton("Scrapper 실행", "green")
+        self.run_scrapper_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.run_scrapper_button)
+
+        self.delete_scrap_xml_button = StyledButton("ScrapXML 삭제", "red")
+        self.delete_scrap_xml_button.setFixedWidth(btn_width)
+        frame_layout.addWidget(self.delete_scrap_xml_button)
+
         frame_layout.addStretch()
-        layout.addWidget(frame, row, col)
+        layout.addWidget(frame, row, col, 2, 1)  # rowspan=2
 
     def _create_output_section(self, layout, row, col):
         """Create output message section."""
@@ -267,45 +295,6 @@ class MainWindow(QMainWindow):
         button_row.addStretch()
         frame_layout.addLayout(button_row)
 
-        layout.addWidget(frame, row, col)
-
-    def _create_settings_section(self, layout, row, col):
-        """Create settings section."""
-        frame = CardFrame()
-        frame_layout = QVBoxLayout(frame)
-        frame_layout.setSpacing(8)
-
-        btn_width = 160
-
-        # Section title
-        title = SectionLabel("설정")
-        frame_layout.addWidget(title)
-
-        self.set_base_path_button = StyledButton("기본 폴더 재설정", "default")
-        self.set_base_path_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.set_base_path_button)
-
-        self.set_target_path_button = StyledButton("기기 폴더 재설정", "default")
-        self.set_target_path_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.set_target_path_button)
-
-        self.open_config_button = StyledButton("설정 파일 열기", "default")
-        self.open_config_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.open_config_button)
-
-        self.open_retroarch_button = StyledButton("RetroArch 폴더 열기", "default")
-        self.open_retroarch_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.open_retroarch_button)
-
-        self.run_scrapper_button = StyledButton("Scrapper 실행", "green")
-        self.run_scrapper_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.run_scrapper_button)
-
-        self.delete_scrap_xml_button = StyledButton("ScrapXML 삭제", "red")
-        self.delete_scrap_xml_button.setFixedWidth(btn_width)
-        frame_layout.addWidget(self.delete_scrap_xml_button)
-
-        frame_layout.addStretch()
         layout.addWidget(frame, row, col)
 
     def _load_default_image(self):
@@ -542,12 +531,25 @@ class MainWindow(QMainWindow):
             show_error(self, "SSH 연결 실패", "SSH 연결에 실패했습니다. 설정을 확인해 주세요.")
             return
 
-        sync_file.copyRemoteList()
-        match, total = groovy.exportGroovyList()
+        local, remote = sync_file.copyRemoteList()
+        if local is None:
+            show_error(self, "리스트 다운로드 실패",
+                       f"서버에서 리스트 파일을 찾을 수 없습니다.\n{sync_file.remotePath}")
+            sync_file.disconnectSSH()
+            return
+
+        try:
+            match, total = groovy.exportGroovyList()
+        except ValueError as e:
+            show_error(self, "리스트 변환 실패", str(e))
+            sync_file.disconnectSSH()
+            return
+
         sync_file.exportLocalList()
+        sync_file.disconnectSSH()
 
         show_info(self, "그루비 리스트 내보내기",
-                  f"그루비 리스트 {match}개를 변환해서 {sync_file.remotePath}로 내보냈습니다.\n")
+                  f"총 {total}개 중 {match}개 매칭하여\n{sync_file.remotePath}로 내보냈습니다.")
 
     def _sync_roms_to_groovy(self):
         """Sync ROMs to Groovy server."""

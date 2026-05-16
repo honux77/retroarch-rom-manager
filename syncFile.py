@@ -74,6 +74,60 @@ class SyncFile:
         return (self.localPath, self.remotePath)
     
 
+    def _sync_sftp_dir(self, sftp, local_dir, remote_dir, label, progress_fn, progress_offset, total):
+        '''로컬 디렉토리와 원격 디렉토리를 양방향 동기화한다. (remove + upload)
+        return: (removeCount, uploadCount)
+        '''
+        import os
+        from os import path
+
+        local_files = [f for f in os.listdir(local_dir) if path.isfile(path.join(local_dir, f))]
+
+        # 원격 디렉토리 없으면 단계별 생성
+        try:
+            sftp.chdir(remote_dir)
+        except IOError:
+            print(f'원격 디렉토리 없음, 생성: {remote_dir}')
+            cur = ''
+            for part in remote_dir.strip('/').split('/'):
+                cur += '/' + part
+                try:
+                    sftp.stat(cur)
+                except IOError:
+                    sftp.mkdir(cur)
+            sftp.chdir(remote_dir)
+
+        remote_files = sftp.listdir()
+
+        # 원격에만 있는 파일 제거
+        remove_count = 0
+        for remote_file in remote_files:
+            if remote_file not in local_files:
+                try:
+                    attr = sftp.stat(remote_file)
+                    if attr.st_mode & 0o40000:
+                        continue
+                    sftp.remove(remote_file)
+                    print(f'[{label}] 원격 제거: {remote_file}')
+                    remove_count += 1
+                except IOError as e:
+                    print(f'[{label}] 원격 제거 실패 ({remote_file}): {e}')
+
+        # 로컬에만 있는 파일 업로드
+        upload_count = 0
+        for i, local_file in enumerate(local_files):
+            if local_file not in remote_files:
+                try:
+                    sftp.put(path.join(local_dir, local_file), local_file)
+                    print(f'[{label}] 업로드: {local_file}')
+                    upload_count += 1
+                except IOError as e:
+                    print(f'[{label}] 업로드 실패 ({local_file}): {e}')
+            progress_fn(progress_offset + i + 1, total, f'{label} 동기화 중...')
+
+        print(f'[{label}] 제거 {remove_count}개, 업로드 {upload_count}개')
+        return remove_count, upload_count
+
     def syncSubRoms(self, subRomDir, status_window=None, status_label=None, progress_bar=None, callback=None):
         '''
         지정된 서브 롬 폴더의 롬 파일들을 SSH로 동기화한다.
@@ -162,61 +216,19 @@ class SyncFile:
             print(f'원격에 업로드된 롬 파일 수: {uploadRomCount}')
 
             # 이미지 디렉토리 동기화
-            removeImageCount = 0
-            uploadImageCount = 0
             remoteImageDir = self.server['remoteImagePath'].replace('[SUB]', subRomDir)
-            try:
-                sftp.chdir(remoteImageDir)
-            except IOError:
-                print(f'원격 이미지 디렉토리 없음, 생성: {remoteImageDir}')
-                # 중간 경로가 없을 수 있으므로 단계별 생성
-                parts = remoteImageDir.strip('/').split('/')
-                cur = ''
-                for part in parts:
-                    cur += '/' + part
-                    try:
-                        sftp.stat(cur)
-                    except IOError:
-                        sftp.mkdir(cur)
-                sftp.chdir(remoteImageDir)
-
-            remoteImageList = sftp.listdir()
-
-            for remoteImage in remoteImageList:
-                if remoteImage not in localImageList:
-                    try:
-                        fileAttr = sftp.stat(remoteImage)
-                    except IOError as e:
-                        print(f'원격 이미지 파일 정보 조회 실패 ({remoteImage}): {e}')
-                        continue
-                    if fileAttr.st_mode & 0o40000:  # 디렉토리면 스킵
-                        continue
-                    try:
-                        sftp.remove(remoteImage)
-                        print(f'원격에서 이미지 제거: {remoteImage}')
-                        removeImageCount += 1
-                    except IOError as e:
-                        print(f'원격 이미지 제거 실패 ({remoteImage}): {e}')
-
-            print(f'원격에서 제거된 이미지 파일 수: {removeImageCount}')
-
-            for i, localImage in enumerate(localImageList):
-                if localImage not in remoteImageList:
-                    localImageFilePath = path.join(localImagePath, localImage)
-                    try:
-                        sftp.put(localImageFilePath, localImage)
-                        print(f'원격에 이미지 업로드: {localImage}')
-                        uploadImageCount += 1
-                    except IOError as e:
-                        print(f'이미지 업로드 실패 ({localImage}): {e}')
-                update_progress(len(localFileList) + i + 1, total_files, f'{subRomDir} 이미지 동기화 중...')
-
-            print(f'원격에 업로드된 이미지 파일 수: {uploadImageCount}')
+            removeImageCount, uploadImageCount = self._sync_sftp_dir(
+                sftp, localImagePath, remoteImageDir,
+                f'{subRomDir}/images', update_progress,
+                progress_offset=len(localFileList),
+                total=total_files,
+            )
 
         finally:
             sftp.close()
 
-        return (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount, len(localFileList), len(localImageList))
+        return (removeRomCount, removeImageCount, uploadRomCount, uploadImageCount,
+                len(localFileList), len(localImageList))
            
        
 
